@@ -376,5 +376,24 @@
     "failedToLoad": "Failed to load",
     "noGetResponse": "No get response",
     "objectNotFound": "Object not found"
+  },
+  "xaps": {
+    "account": "Account",
+    "confirmRemove": "Remove this device?",
+    "confirmRemoveAll": "Remove all devices of {{name}}?",
+    "deviceId": "Device ID",
+    "deviceToken": "Device Token",
+    "empty": "No devices registered yet.",
+    "loadFailed": "Failed to load push devices.",
+    "mailboxes": "Mailboxes",
+    "noPermission": "You do not have permission to view push devices.",
+    "refresh": "Refresh",
+    "registered": "Registered",
+    "remove": "Remove device",
+    "removeAll": "Remove all",
+    "removeFailed": "Failed to remove devices.",
+    "removed": "Device removed.",
+    "removedAll": "All devices removed.",
+    "title": "Push Devices"
   }
 }

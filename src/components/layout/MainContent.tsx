@@ -39,6 +39,10 @@ const ActionPage = lazyFeature(
   () => import('@/features/actions/ActionPage'),
   (m) => m.ActionPage,
 );
+const XapsDevicesView = lazyFeature(
+  () => import('@/features/xaps/XapsDevicesPage'),
+  (m) => m.XapsDevicesPage,
+);
 
 interface MainContentProps {
   viewName?: string;
@@ -78,6 +82,9 @@ function renderView(schema: Schema | null, viewName?: string, id?: string, secti
     }
     if (componentName === 'LiveTracing') {
       return <LiveTracingPage />;
+    }
+    if (componentName === 'XapsDevices') {
+      return <XapsDevicesView />;
     }
     return (
       <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
