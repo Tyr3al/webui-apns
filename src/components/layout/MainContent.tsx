@@ -43,6 +43,10 @@ const XapsDevicesView = lazyFeature(
   () => import('@/features/xaps/XapsDevicesPage'),
   (m) => m.XapsDevicesPage,
 );
+const XapsMyDevicesView = lazyFeature(
+  () => import('@/features/xaps/XapsMyDevicesPage'),
+  (m) => m.XapsMyDevicesPage,
+);
 
 interface MainContentProps {
   viewName?: string;
@@ -85,6 +89,9 @@ function renderView(schema: Schema | null, viewName?: string, id?: string, secti
     }
     if (componentName === 'XapsDevices') {
       return <XapsDevicesView />;
+    }
+    if (componentName === 'XapsMyDevices') {
+      return <XapsMyDevicesView />;
     }
     return (
       <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">

@@ -394,6 +394,8 @@
     "removeFailed": "Failed to remove devices.",
     "removed": "Device removed.",
     "removedAll": "All devices removed.",
-    "title": "Push Devices"
+    "title": "Push Devices",
+    "myDevicesTitle": "My Devices",
+    "myDevicesEmpty": "You have no registered devices."
   }
 }
