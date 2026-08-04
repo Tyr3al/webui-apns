@@ -6,13 +6,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, RefreshCw, Smartphone, Trash2 } from 'lucide-react';
+import { Loader2, RefreshCw, Send, Smartphone, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/authStore';
+import { sendTestPush } from './testPush';
 
 interface XapsRegistration {
   apsAccountId: string;
@@ -33,6 +34,7 @@ export function XapsMyDevicesPage() {
   const [account, setAccount] = useState<XapsAccount | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [testing, setTesting] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!accountId) return;
@@ -70,6 +72,19 @@ export function XapsMyDevicesPage() {
         });
       } finally {
         setDeleting(null);
+      }
+    },
+    [accountId, load, t],
+  );
+
+  const testDevice = useCallback(
+    async (apsAccountId: string) => {
+      if (!accountId) return;
+      setTesting(apsAccountId);
+      const reload = await sendTestPush(accountId, apsAccountId, t);
+      setTesting(null);
+      if (reload) {
+        await load();
       }
     },
     [accountId, load, t],
@@ -137,19 +152,34 @@ export function XapsMyDevicesPage() {
                     {new Date(reg.registeredAt * 1000).toLocaleString()}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={deleting === reg.apsAccountId}
-                      title={t('xaps.remove', 'Remove device')}
-                      onClick={() => void removeDevice(reg.apsAccountId)}
-                    >
-                      {deleting === reg.apsAccountId ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={testing === reg.apsAccountId}
+                        title={t('xaps.test', 'Send test push')}
+                        onClick={() => void testDevice(reg.apsAccountId)}
+                      >
+                        {testing === reg.apsAccountId ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={deleting === reg.apsAccountId}
+                        title={t('xaps.remove', 'Remove device')}
+                        onClick={() => void removeDevice(reg.apsAccountId)}
+                      >
+                        {deleting === reg.apsAccountId ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}

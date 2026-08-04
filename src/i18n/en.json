@@ -396,6 +396,11 @@
     "removedAll": "All devices removed.",
     "title": "Push Devices",
     "myDevicesTitle": "My Devices",
-    "myDevicesEmpty": "You have no registered devices."
+    "myDevicesEmpty": "You have no registered devices.",
+    "test": "Send test push",
+    "testSent": "Test push sent. Check your device.",
+    "testNotConfigured": "Push is not configured or the configuration is broken.",
+    "testDeviceInactive": "The device token is no longer valid, the device was removed.",
+    "testFailed": "Test push failed."
   }
 }

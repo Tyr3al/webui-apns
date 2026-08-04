@@ -6,13 +6,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, RefreshCw, Smartphone, Trash2 } from 'lucide-react';
+import { Loader2, RefreshCw, Send, Smartphone, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAccountStore } from '@/stores/accountStore';
+import { sendTestPush } from './testPush';
 
 interface XapsRegistration {
   apsAccountId: string;
@@ -37,6 +38,7 @@ export function XapsDevicesPage() {
   const [accounts, setAccounts] = useState<XapsAccount[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [testing, setTesting] = useState<string | null>(null);
 
   const canView = hasObjectPermission('sysAccount', 'Get');
   const canDelete = hasObjectPermission('sysAccount', 'Update');
@@ -104,6 +106,18 @@ export function XapsDevicesPage() {
         });
       } finally {
         setDeleting(null);
+      }
+    },
+    [load, t],
+  );
+
+  const testDevice = useCallback(
+    async (accountId: number, apsAccountId: string) => {
+      setTesting(apsAccountId);
+      const reload = await sendTestPush(String(accountId), apsAccountId, t);
+      setTesting(null);
+      if (reload) {
+        await load();
       }
     },
     [load, t],
@@ -212,21 +226,36 @@ export function XapsDevicesPage() {
                   </td>
                   <td className="px-3 py-2 text-right">
                     {account.registrations.map((reg) => (
-                      <div key={reg.apsAccountId} className="py-0.5">
+                      <div key={reg.apsAccountId} className="flex items-center justify-end gap-1 py-0.5">
                         {canDelete && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={deleting === reg.apsAccountId}
-                            title={t('xaps.remove', 'Remove device')}
-                            onClick={() => void removeDevice(account.accountId, reg.apsAccountId)}
-                          >
-                            {deleting === reg.apsAccountId ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={testing === reg.apsAccountId}
+                              title={t('xaps.test', 'Send test push')}
+                              onClick={() => void testDevice(account.accountId, reg.apsAccountId)}
+                            >
+                              {testing === reg.apsAccountId ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={deleting === reg.apsAccountId}
+                              title={t('xaps.remove', 'Remove device')}
+                              onClick={() => void removeDevice(account.accountId, reg.apsAccountId)}
+                            >
+                              {deleting === reg.apsAccountId ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </>
                         )}
                       </div>
                     ))}
