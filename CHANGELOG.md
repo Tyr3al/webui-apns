@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2026-08-06
+
+### Added
+- XAPS push device management page for admins: lists all accounts' registered iOS devices, with per-device delete and per-account remove-all.
+- 'My Devices' self-service page for regular users to view and remove their own registered iOS devices.
+- 'Send test push' button on device rows (admin and My Devices pages) to trigger and surface the result of a test push.
+
 ## [1.0.8] - 2026-07-31
 
 ### Added
