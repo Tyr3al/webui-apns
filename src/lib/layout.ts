@@ -62,6 +62,11 @@ function checkSpecialLink(
     return { visible: allowed, enterprise: true };
   }
 
+  if (viewName === 'CustomComponent/XapsDevices') {
+    const allowed = canGet ? canGet('sysAccount') : true;
+    return { visible: allowed, enterprise: false };
+  }
+
   if (viewName.startsWith('CustomComponent/')) {
     return { visible: true, enterprise: false };
   }
