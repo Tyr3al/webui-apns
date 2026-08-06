@@ -28,6 +28,16 @@
   <a href="https://matrix.to/#/#stalwart:matrix.org"><img src="https://img.shields.io/matrix/stalwartmail%3Amatrix.org?label=Join%20Matrix&logo=matrix&style=flat-square" alt="Matrix"></a>
 </p>
 
+## About this fork
+
+This is a fork of [stalwartlabs/webui](https://github.com/stalwartlabs/webui) that adds a UI for managing APNs (Apple Push Notification service) push devices via the XAPS extension:
+
+- An admin **device management page** listing every account's registered iOS devices, with per-device delete and per-account remove-all.
+- A self-service **'My Devices' page** letting regular users view and remove their own registered devices.
+- A **'Send test push'** button to trigger and verify push delivery on demand.
+
+These pages call XAPS API endpoints that only exist on [Tyr3al/stalwart-apns](https://github.com/Tyr3al/stalwart-apns), a fork of Stalwart Mail Server with APNs push support built in. This webui fork is only useful paired with that server — running it against a vanilla Stalwart instance will just hide the XAPS-specific pages, since the underlying API won't exist.
+
 ## Features
 
 **Stalwart WebUI** is schema-driven single-page application for administering [Stalwart](https://stalw.art). After authentication the panel fetches a JSON schema from the server and dynamically generates all forms, lists, navigation, and layouts from that schema. Nothing is hardcoded.
