@@ -9,14 +9,8 @@ rebases onto a newer upstream release. Release candidates leading up to a versio
 `-rc.<M>` and marked as a GitHub prerelease.
 
 ### Added
-- XAPS push device management page for admins: lists all accounts' registered iOS devices, with per-device delete and per-account remove-all.
-- 'My Devices' self-service page for regular users to view and remove their own registered iOS devices.
-- 'Send test push' button on device rows (admin and My Devices pages) to trigger and surface the result of a test push.
-
-### Fixed
-- Hide the administrative XAPS device page from accounts without account-read permission.
-- Make the Devices and My Devices tables scroll horizontally within their own container on narrow screens instead of overflowing uncontrolled.
-- Refresh the signed-in account's effective permissions after role or account changes so newly granted settings pages appear immediately.
+- XAPS push device management: admin "Push Devices" page listing all accounts' registered iOS devices (per-device delete, per-account remove-all, hidden from accounts without account-read permission), and a "My Devices" self-service page for users to manage their own registrations. Both offer a "Send test push" action and scroll horizontally on narrow screens.
+- Refresh the signed-in account's effective permissions after editing a Role or Account object, so newly granted settings pages appear without a manual reload.
 
 ## [1.0.8] - 2026-07-31
 
