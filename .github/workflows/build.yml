@@ -38,11 +38,21 @@ jobs:
         run: |
           awk '/^## \[/{c++} c==1' CHANGELOG.md > release_body.md
 
+      - name: Detect release candidate
+        id: rc
+        run: |
+          if [[ "${{ github.ref_name }}" == *-rc.* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
           files: webui.zip
           body_path: release_body.md
+          prerelease: ${{ steps.rc.outputs.prerelease }}
           # Tag-push releases are created as drafts; the `publish` job un-drafts
           # them only after the build succeeds, so watcher notifications don't
           # fire on broken builds.
@@ -58,7 +68,12 @@ jobs:
       - name: Un-draft release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release edit "${{ github.ref_name }}" --draft=false --latest --repo "${{ github.repository }}"
+        run: |
+          if [[ "${{ github.ref_name }}" == *-rc.* ]]; then
+            gh release edit "${{ github.ref_name }}" --draft=false --repo "${{ github.repository }}"
+          else
+            gh release edit "${{ github.ref_name }}" --draft=false --latest --repo "${{ github.repository }}"
+          fi
 
   cleanup:
     name: Cleanup failed release
