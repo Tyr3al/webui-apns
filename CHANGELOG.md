@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Fixed
 - Refresh the signed-in account's effective permissions after role or account changes so newly granted settings pages appear immediately.
+
+## [1.1.2] - 2026-08-07
+
+### Fixed
 - Make the Devices and My Devices tables scroll horizontally within their own container on narrow screens instead of overflowing uncontrolled.
 
 ## [1.1.1] - 2026-08-07
