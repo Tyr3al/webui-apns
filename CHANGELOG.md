@@ -2,11 +2,6 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-
-### Fixed
-- Refresh the signed-in account's effective permissions after role or account changes so newly granted settings pages appear immediately.
-
 ## [1.0.8-apns.1] - 2026-08-07
 
 Fork versions follow `<upstream-version>-apns.<N>`, resetting `N` to 1 each time the fork
@@ -21,6 +16,7 @@ rebases onto a newer upstream release. Release candidates leading up to a versio
 ### Fixed
 - Hide the administrative XAPS device page from accounts without account-read permission.
 - Make the Devices and My Devices tables scroll horizontally within their own container on narrow screens instead of overflowing uncontrolled.
+- Refresh the signed-in account's effective permissions after role or account changes so newly granted settings pages appear immediately.
 
 ## [1.0.8] - 2026-07-31
 

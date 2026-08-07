@@ -45,7 +45,7 @@ import {
   buildCreateDefaults,
   buildEmbeddedDefaults,
 } from '@/lib/schemaResolver';
-import { jmapGet, jmapSet, jmapRequest, getAccountId } from '@/services/jmap/client';
+import { fetchAccountInfo, jmapGet, jmapSet, jmapRequest, getAccountId } from '@/services/jmap/client';
 import { calculateJmapPatch } from '@/lib/jmapPatch';
 import { friendlySetError, validationErrorMessage } from '@/lib/jmapErrors';
 import { coerceLabel } from '@/lib/objectOptions';
@@ -68,6 +68,7 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
   const schema = useSchemaStore((s) => s.schema);
   const viewToSection = useSchemaStore((s) => s.viewToSection);
   const edition = useAccountStore((s) => s.edition);
+  const setAccountInfo = useAccountStore((s) => s.setAccountInfo);
   const { canUpdateObject, canDestroyObject } = usePermissions();
 
   const resolved = useMemo(() => {
@@ -96,6 +97,15 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
   const [createdObjectId, setCreatedObjectId] = useState<string | null>(null);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  const refreshAccountPermissions = useCallback(async () => {
+    try {
+      const accountInfo = await fetchAccountInfo();
+      setAccountInfo(accountInfo.permissions, accountInfo.edition, accountInfo.locale);
+    } catch (err) {
+      console.warn('Failed to refresh account permissions after saving:', err);
+    }
+  }, [setAccountInfo]);
 
   const currentFields = useMemo((): Fields | null => {
     if (!resolved) return null;
@@ -598,6 +608,10 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
             variant: 'success',
           });
 
+          if (obj.objectName === 'x:Role' || obj.objectName === 'x:Account') {
+            await refreshAccountPermissions();
+          }
+
           if (isSingleton) {
             const getResponses = await jmapGet(obj.objectName, accountId, ['singleton'], fetchProperties);
             const getResult = getResponses[0]?.[1];
@@ -637,6 +651,7 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
     applySetError,
     validateRequired,
     fetchProperties,
+    refreshAccountPermissions,
     t,
   ]);
 

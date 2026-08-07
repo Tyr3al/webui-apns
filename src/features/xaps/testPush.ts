@@ -17,11 +17,7 @@ interface TestResult {
  * to the user. Returns true when the device list should be refreshed (a push
  * was sent or the registration was removed).
  */
-export async function sendTestPush(
-  accountId: string,
-  apsAccountId: string,
-  t: TFunction,
-): Promise<boolean> {
+export async function sendTestPush(accountId: string, apsAccountId: string, t: TFunction): Promise<boolean> {
   try {
     const response = await apiFetch(
       `/api/xaps/test/${encodeURIComponent(accountId)}/${encodeURIComponent(apsAccountId)}`,
@@ -31,25 +27,19 @@ export async function sendTestPush(
     switch (data.status) {
       case 'ok':
         toast({
-          title: t('xaps.testSent', 'Test push sent. Check your device.'),
+          title: t('xaps.testSent', 'Test push accepted. Mail will refresh silently.'),
           variant: 'success',
         });
         return true;
       case 'not-configured':
         toast({
-          title: t(
-            'xaps.testNotConfigured',
-            'Push is not configured or the configuration is broken.',
-          ),
+          title: t('xaps.testNotConfigured', 'Push is not configured or the configuration is broken.'),
           variant: 'destructive',
         });
         return false;
       case 'device-inactive':
         toast({
-          title: t(
-            'xaps.testDeviceInactive',
-            'The device token is no longer valid, the device was removed.',
-          ),
+          title: t('xaps.testDeviceInactive', 'The device token is no longer valid, the device was removed.'),
           variant: 'warning',
         });
         return true;

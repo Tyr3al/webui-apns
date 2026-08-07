@@ -398,7 +398,7 @@
     "myDevicesTitle": "My Devices",
     "myDevicesEmpty": "You have no registered devices.",
     "test": "Send test push",
-    "testSent": "Test push sent. Check your device.",
+    "testSent": "Test push accepted. Mail will refresh silently.",
     "testNotConfigured": "Push is not configured or the configuration is broken.",
     "testDeviceInactive": "The device token is no longer valid, the device was removed.",
     "testFailed": "Test push failed."
