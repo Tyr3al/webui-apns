@@ -30,6 +30,10 @@
 
 ## About this fork
 
+> **⚠️ This fork is under active development and has not had a stable release.** Versions tagged
+> `-rc.*` are release candidates, not finished releases — expect rough edges, and pair it with
+> [Tyr3al/stalwart-apns](https://github.com/Tyr3al/stalwart-apns) for the matching XAPS API.
+
 This is a fork of [stalwartlabs/webui](https://github.com/stalwartlabs/webui) that adds a UI for managing APNs (Apple Push Notification service) push devices via the XAPS extension:
 
 - An admin **device management page** listing every account's registered iOS devices, with per-device delete and per-account remove-all.
