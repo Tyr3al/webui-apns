@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- Refresh the signed-in account's effective permissions after role or account changes so newly granted settings pages appear immediately.
+- Make the Devices and My Devices tables scroll horizontally within their own container on narrow screens instead of overflowing uncontrolled.
+
 ## [1.1.1] - 2026-08-07
 
 ### Fixed
@@ -124,4 +130,3 @@ All notable changes to this project will be documented in this file. This projec
 ### Changed
 
 ### Fixed
-

@@ -59,9 +59,12 @@ export function XapsMyDevicesPage() {
       if (!window.confirm(t('xaps.confirmRemove', 'Remove this device?'))) return;
       setDeleting(apsAccountId);
       try {
-        await apiFetch(`/api/xaps/registrations/${encodeURIComponent(accountId ?? '')}/${encodeURIComponent(apsAccountId)}`, {
-          method: 'DELETE',
-        });
+        await apiFetch(
+          `/api/xaps/registrations/${encodeURIComponent(accountId ?? '')}/${encodeURIComponent(apsAccountId)}`,
+          {
+            method: 'DELETE',
+          },
+        );
         toast({ title: t('xaps.removed', 'Device removed.'), variant: 'success' });
         await load();
       } catch (err) {
@@ -114,77 +117,79 @@ export function XapsMyDevicesPage() {
             {t('xaps.myDevicesEmpty', 'You have no registered devices.')}
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted">
-                <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                  {t('xaps.deviceId', 'Device ID')}
-                </th>
-                <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                  {t('xaps.deviceToken', 'Device Token')}
-                </th>
-                <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                  {t('xaps.mailboxes', 'Mailboxes')}
-                </th>
-                <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                  {t('xaps.registered', 'Registered')}
-                </th>
-                <th className="w-12 px-3 py-3 text-right font-medium text-muted-foreground">
-                  {t('list.actions', 'Actions')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {account.registrations.map((reg) => (
-                <tr key={reg.apsAccountId} className="border-b align-top">
-                  <td className="px-3 py-2 font-mono text-xs">{reg.apsAccountId}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{reg.deviceToken}</td>
-                  <td className="px-3 py-2">
-                    <div className="flex flex-wrap gap-1">
-                      {reg.mailboxes.map((mbox) => (
-                        <Badge key={mbox} variant="secondary" className="text-xs">
-                          {mbox}
-                        </Badge>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
-                    {new Date(reg.registeredAt * 1000).toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={testing === reg.apsAccountId}
-                        title={t('xaps.test', 'Send test push')}
-                        onClick={() => void testDevice(reg.apsAccountId)}
-                      >
-                        {testing === reg.apsAccountId ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={deleting === reg.apsAccountId}
-                        title={t('xaps.remove', 'Remove device')}
-                        onClick={() => void removeDevice(reg.apsAccountId)}
-                      >
-                        {deleting === reg.apsAccountId ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted">
+                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                    {t('xaps.deviceId', 'Device ID')}
+                  </th>
+                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                    {t('xaps.deviceToken', 'Device Token')}
+                  </th>
+                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                    {t('xaps.mailboxes', 'Mailboxes')}
+                  </th>
+                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                    {t('xaps.registered', 'Registered')}
+                  </th>
+                  <th className="w-12 px-3 py-3 text-right font-medium text-muted-foreground">
+                    {t('list.actions', 'Actions')}
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {account.registrations.map((reg) => (
+                  <tr key={reg.apsAccountId} className="border-b align-top">
+                    <td className="px-3 py-2 font-mono text-xs">{reg.apsAccountId}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{reg.deviceToken}</td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-wrap gap-1">
+                        {reg.mailboxes.map((mbox) => (
+                          <Badge key={mbox} variant="secondary" className="text-xs">
+                            {mbox}
+                          </Badge>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                      {new Date(reg.registeredAt * 1000).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={testing === reg.apsAccountId}
+                          title={t('xaps.test', 'Send test push')}
+                          onClick={() => void testDevice(reg.apsAccountId)}
+                        >
+                          {testing === reg.apsAccountId ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={deleting === reg.apsAccountId}
+                          title={t('xaps.remove', 'Remove device')}
+                          onClick={() => void removeDevice(reg.apsAccountId)}
+                        >
+                          {deleting === reg.apsAccountId ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </CardContent>
     </Card>
