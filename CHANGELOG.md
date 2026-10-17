@@ -2,15 +2,45 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.8-apns.1] - 2026-08-07
+## [1.0.11-apns.1] - 2026-10-17
 
 Fork versions follow `<upstream-version>-apns.<N>`, resetting `N` to 1 each time the fork
 rebases onto a newer upstream release. Release candidates leading up to a version are tagged
 `-rc.<M>` and marked as a GitHub prerelease.
 
+### Changed
+- Rebased onto upstream [v1.0.11](https://github.com/stalwartlabs/webui/blob/main/CHANGELOG.md) (from v1.0.8), picking up the server-configurable OAuth client ID (honors the `oauthClientId` setting on `Application` in Stalwart 0.16.19+), Sievepad integration, and the schema-default fix for re-added map entries.
+
 ### Added
 - XAPS push device management: admin "Push Devices" page listing all accounts' registered iOS devices (per-device delete, per-account remove-all, hidden from accounts without account-read permission), and a "My Devices" self-service page for users to manage their own registrations. Both offer a "Send test push" action and scroll horizontally on narrow screens.
 - Refresh the signed-in account's effective permissions after editing a Role or Account object, so newly granted settings pages appear without a manual reload.
+
+## [1.0.11] - 2026-09-15
+
+### Added
+- Sievepad integration.
+
+### Changed
+
+### Fixed
+
+## [1.0.10] - 2026-09-04
+
+### Added
+
+### Changed
+
+### Fixed
+- Re-added map entries and object list items are seeded with their schema defaults, including a value for every non-nullable boolean.
+
+## [1.0.9] - 2026-08-24
+
+### Added
+- Server configurable OAuth client ID.
+
+### Changed
+
+### Fixed
 
 ## [1.0.8] - 2026-07-31
 

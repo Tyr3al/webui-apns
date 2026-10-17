@@ -8,7 +8,6 @@ import { useState, useEffect, useMemo, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBufferedValue, useResetOnChange } from '@/hooks/useBufferedValue';
 import ReactMarkdown from 'react-markdown';
-
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -21,14 +20,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { Calendar } from '@/components/ui/calendar';
-
 import { Plus, X, Eye, EyeOff, Loader2, Search, Check, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
-
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
 import { ExpressionEditor } from '@/components/expression/ExpressionEditor';
 import { OtpAuthField } from '@/components/forms/OtpAuthField';
-
+import { SievepadButton } from '@/components/forms/SievepadButton';
 import {
   bytesToHuman,
   humanToBytes,
@@ -39,7 +35,13 @@ import {
   SIZE_UNITS,
   DURATION_UNITS,
 } from '@/lib/durationFormat';
-import { resolveSchema, resolveVariantForm, resolveObject, buildEmbeddedDefaults } from '@/lib/schemaResolver';
+import {
+  resolveSchema,
+  resolveVariantForm,
+  resolveObject,
+  buildEmbeddedDefaults,
+  buildNewObjectValue,
+} from '@/lib/schemaResolver';
 import { cn } from '@/lib/utils';
 import { useAccountStore } from '@/stores/accountStore';
 import { useEffectiveEdition } from '@/components/forms/FormEditionContext';
@@ -58,6 +60,7 @@ export interface FieldWidgetProps {
   readOnly: boolean;
   error?: string;
   schema: Schema;
+  sieveScriptName?: string;
 }
 
 function getRequiredMarker(field: Field, readOnly: boolean): 'required' | 'optional' | null {
@@ -78,7 +81,7 @@ function getRequiredMarker(field: Field, readOnly: boolean): 'required' | 'optio
 
 export function FieldWidget(props: FieldWidgetProps) {
   const { t } = useTranslation();
-  const { field, formField, value, onChange, readOnly, error, schema } = props;
+  const { field, formField, value, onChange, readOnly, error, schema, sieveScriptName } = props;
   const ft = field.type;
   const edition = useEffectiveEdition();
 
@@ -131,7 +134,7 @@ export function FieldWidget(props: FieldWidgetProps) {
           />
         );
       case 'blobId':
-        return <BlobField value={value} onChange={onChange} readOnly={readOnly} />;
+        return <BlobField value={value} onChange={onChange} readOnly={readOnly} sieveScriptName={sieveScriptName} />;
       case 'objectId':
         return (
           <ObjectIdField
@@ -235,6 +238,9 @@ export function FieldWidget(props: FieldWidgetProps) {
         </div>
       )}
       {widget}
+      {sieveScriptName !== undefined && ft.type === 'string' && (
+        <SievepadButton scriptName={sieveScriptName} source={typeof value === 'string' ? value : ''} />
+      )}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
@@ -985,9 +991,10 @@ interface BlobFieldProps {
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly: boolean;
+  sieveScriptName?: string;
 }
 
-function BlobField({ value, onChange, readOnly }: BlobFieldProps) {
+function BlobField({ value, onChange, readOnly, sieveScriptName }: BlobFieldProps) {
   const { t } = useTranslation();
   const blobId = typeof value === 'string' ? value : null;
   const [content, setContent] = useState<string>('');
@@ -1053,6 +1060,7 @@ function BlobField({ value, onChange, readOnly }: BlobFieldProps) {
         rows={8}
         className="font-mono text-xs"
       />
+      {sieveScriptName !== undefined && <SievepadButton scriptName={sieveScriptName} source={content} />}
       {modified && (
         <p className="text-xs text-muted-foreground">
           {t('field.contentModified', 'Content modified (will be saved as a new blob)')}
@@ -1539,16 +1547,7 @@ function ObjectListField({
 
   const addItem = () => {
     const nextIndex = entries.length > 0 ? Math.max(...entries.map(([k]) => parseInt(k))) + 1 : 0;
-    let defaults: Record<string, unknown> = {};
-    if (resolvedSchema.type === 'single' && resolvedSchema.fields.defaults) {
-      defaults = { ...resolvedSchema.fields.defaults };
-    } else if (resolvedSchema.type === 'multiple' && resolvedSchema.variants[0]) {
-      defaults = { '@type': resolvedSchema.variants[0].name };
-      if (resolvedSchema.variants[0].fields?.defaults) {
-        defaults = { ...defaults, ...resolvedSchema.variants[0].fields.defaults };
-      }
-    }
-    onChange({ ...mapValue, [String(nextIndex)]: defaults });
+    onChange({ ...mapValue, [String(nextIndex)]: buildNewObjectValue(schema, objectName) });
   };
 
   const removeItem = (key: string) => {
@@ -2021,7 +2020,7 @@ function MapField({ keyClass, valueClass, value, onChange, readOnly, schema, min
     if (valueClass.type === 'number') {
       defaultValue = 0;
     } else if (valueClass.type === 'object') {
-      defaultValue = {};
+      defaultValue = buildNewObjectValue(schema, valueClass.objectName);
     }
 
     onChange({ ...mapValue, [key]: defaultValue });
