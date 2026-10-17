@@ -30,9 +30,10 @@
 
 ## About this fork
 
-> **⚠️ This fork is under active development and has not had a stable release.** Versions tagged
-> `-rc.*` are release candidates, not finished releases — expect rough edges, and pair it with
-> [Tyr3al/stalwart-apns](https://github.com/Tyr3al/stalwart-apns) for the matching XAPS API.
+> [!NOTE]
+> Pair this fork with [Tyr3al/stalwart-apns](https://github.com/Tyr3al/stalwart-apns) for the matching
+> XAPS API. Versions with an `-rc.*` suffix are release candidates (GitHub prereleases); all other
+> versions are stable releases.
 
 This is a fork of [stalwartlabs/webui](https://github.com/stalwartlabs/webui) that adds a UI for managing APNs (Apple Push Notification service) push devices via the XAPS extension:
 
