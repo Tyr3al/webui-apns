@@ -1,7 +1,7 @@
 {
   "name": "stalwart-webui",
   "private": true,
-  "version": "1.0.8-apns.1",
+  "version": "1.0.11-apns.1",
   "description": "Stalwart WebUI",
   "type": "module",
   "scripts": {

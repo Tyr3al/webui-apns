@@ -53,6 +53,7 @@ import { SECRET_MASK } from '@/lib/jmapUtils';
 import { toast } from '@/hooks/use-toast';
 import { logFormChange } from '@/lib/debug';
 import { FieldWidget } from '@/components/forms/FieldWidget';
+import { isSieveScriptField } from '@/lib/sievepad';
 
 import type { Field, Fields, Form, FormField, Schema } from '@/types/schema';
 import type { JmapSetResponse, JmapSetError, JmapMethodCall } from '@/types/jmap';
@@ -755,6 +756,7 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
   })();
 
   const sectionsToRender = buildSections(combinedForm, currentFields, isCreate, edition);
+  const scriptName = typeof formData.name === 'string' ? formData.name : '';
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -825,6 +827,9 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
                     readOnly={fieldReadOnly}
                     error={fieldError}
                     schema={schema}
+                    sieveScriptName={
+                      isSieveScriptField(resolved.obj.objectName, formField.name) ? scriptName : undefined
+                    }
                   />
                 );
 
