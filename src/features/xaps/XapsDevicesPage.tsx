@@ -6,27 +6,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, RefreshCw, Send, Smartphone, Trash2 } from 'lucide-react';
+import { Loader2, RefreshCw, Smartphone } from 'lucide-react';
 import { apiFetch } from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useAccountStore } from '@/stores/accountStore';
 import { sendTestPush } from './testPush';
-
-interface XapsRegistration {
-  apsAccountId: string;
-  deviceToken: string;
-  mailboxes: string[];
-  registeredAt: number;
-}
-
-interface XapsAccount {
-  accountId: number;
-  accountName: string;
-  registrations: XapsRegistration[];
-}
+import { DeviceActions, DeviceCard, MailboxBadges, RegisteredAt, type XapsAccount } from './DeviceParts';
 
 interface XapsAccountsResponse {
   accounts: XapsAccount[];
@@ -118,6 +105,28 @@ export function XapsDevicesPage() {
     [load, t],
   );
 
+  const deviceActions = (account: XapsAccount, reg: XapsAccount['registrations'][number]) =>
+    canDelete ? (
+      <DeviceActions
+        testing={testing === reg.apsAccountId}
+        deleting={deleting === reg.apsAccountId}
+        onTest={() => void testDevice(account.accountId, reg.apsAccountId)}
+        onRemove={() => void removeDevice(account.accountId, reg.apsAccountId)}
+      />
+    ) : undefined;
+
+  const removeAllButton = (account: XapsAccount) =>
+    account.registrations.length > 1 && canDelete ? (
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={deleting === `all-${account.accountId}`}
+        onClick={() => void removeAllDevices(account.accountId, account.accountName)}
+      >
+        {t('xaps.removeAll', 'Remove all')}
+      </Button>
+    ) : null;
+
   if (!canView) {
     return (
       <Card>
@@ -157,122 +166,79 @@ export function XapsDevicesPage() {
             {t('xaps.empty', 'No devices registered yet.')}
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted">
-                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    {t('xaps.account', 'Account')}
-                  </th>
-                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    {t('xaps.deviceId', 'Device ID')}
-                  </th>
-                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    {t('xaps.deviceToken', 'Device Token')}
-                  </th>
-                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    {t('xaps.mailboxes', 'Mailboxes')}
-                  </th>
-                  <th className="px-3 py-3 text-left font-medium text-muted-foreground">
-                    {t('xaps.registered', 'Registered')}
-                  </th>
-                  <th className="w-12 px-3 py-3 text-right font-medium text-muted-foreground">
-                    {t('list.actions', 'Actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {accounts.map((account) => (
-                  <tr key={account.accountId} className="border-b align-top">
-                    <td className="px-3 py-2">
-                      <div className="font-medium">{account.accountName}</div>
+          <>
+            {/* Narrow screens: one card per account, one block per device. */}
+            <div className="space-y-4 md:hidden">
+              {accounts.map((account) => (
+                <div key={account.accountId} className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">{account.accountName}</div>
                       <div className="text-xs text-muted-foreground">#{account.accountId}</div>
-                    </td>
-                    <td className="px-3 py-2">
-                      {account.registrations.map((reg) => (
-                        <div key={reg.apsAccountId} className="py-0.5 font-mono text-xs">
-                          {reg.apsAccountId}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="px-3 py-2">
-                      {account.registrations.map((reg) => (
-                        <div key={reg.apsAccountId} className="py-0.5 font-mono text-xs">
-                          {reg.deviceToken}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="px-3 py-2">
-                      {account.registrations.map((reg) => (
-                        <div key={reg.apsAccountId} className="flex flex-wrap gap-1 py-0.5">
-                          {reg.mailboxes.map((mbox) => (
-                            <Badge key={mbox} variant="secondary" className="text-xs">
-                              {mbox}
-                            </Badge>
-                          ))}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="px-3 py-2">
-                      {account.registrations.map((reg) => (
-                        <div key={reg.apsAccountId} className="py-0.5 text-xs text-muted-foreground">
-                          {new Date(reg.registeredAt * 1000).toLocaleString()}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {account.registrations.map((reg) => (
-                        <div key={reg.apsAccountId} className="flex items-center justify-end gap-1 py-0.5">
-                          {canDelete && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={testing === reg.apsAccountId}
-                                title={t('xaps.test', 'Send test push')}
-                                onClick={() => void testDevice(account.accountId, reg.apsAccountId)}
-                              >
-                                {testing === reg.apsAccountId ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Send className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled={deleting === reg.apsAccountId}
-                                title={t('xaps.remove', 'Remove device')}
-                                onClick={() => void removeDevice(account.accountId, reg.apsAccountId)}
-                              >
-                                {deleting === reg.apsAccountId ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                      {account.registrations.length > 1 && canDelete && (
-                        <div className="pt-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={deleting === `all-${account.accountId}`}
-                            onClick={() => void removeAllDevices(account.accountId, account.accountName)}
-                          >
-                            {t('xaps.removeAll', 'Remove all')}
-                          </Button>
-                        </div>
-                      )}
-                    </td>
+                    </div>
+                    {removeAllButton(account)}
+                  </div>
+                  {account.registrations.map((reg) => (
+                    <DeviceCard key={reg.apsAccountId} registration={reg} actions={deviceActions(account, reg)} />
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {/* Wide screens: one table row per device, the account cell spans its devices. */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted">
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                      {t('xaps.account', 'Account')}
+                    </th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                      {t('xaps.deviceId', 'Device ID')}
+                    </th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                      {t('xaps.deviceToken', 'Device Token')}
+                    </th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                      {t('xaps.mailboxes', 'Mailboxes')}
+                    </th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground">
+                      {t('xaps.registered', 'Registered')}
+                    </th>
+                    <th className="w-12 px-3 py-3 text-right font-medium text-muted-foreground">
+                      {t('list.actions', 'Actions')}
+                    </th>
                   </tr>
+                </thead>
+                {accounts.map((account) => (
+                  <tbody key={account.accountId} className="border-b">
+                    {account.registrations.map((reg, index) => (
+                      <tr key={reg.apsAccountId} className="align-middle">
+                        {index === 0 && (
+                          <td rowSpan={account.registrations.length} className="px-3 py-2 align-top">
+                            <div className="font-medium">{account.accountName}</div>
+                            <div className="text-xs text-muted-foreground">#{account.accountId}</div>
+                            {account.registrations.length > 1 && canDelete && (
+                              <div className="pt-2">{removeAllButton(account)}</div>
+                            )}
+                          </td>
+                        )}
+                        <td className="px-3 py-1 font-mono text-xs">{reg.apsAccountId}</td>
+                        <td className="px-3 py-1 font-mono text-xs">{reg.deviceToken}</td>
+                        <td className="px-3 py-1">
+                          <MailboxBadges mailboxes={reg.mailboxes} />
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-1 text-xs text-muted-foreground">
+                          <RegisteredAt registeredAt={reg.registeredAt} />
+                        </td>
+                        <td className="px-3 py-1">{deviceActions(account, reg)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
