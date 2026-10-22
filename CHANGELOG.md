@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [1.0.11-apns.2] - 2026-10-22
 
 ### Fixed
 - Push Devices: per-device action buttons now line up with their device row (one table row per device, the account cell spans them). On narrow screens both Push Devices and My Devices show one card per device instead of a horizontally scrolling table.
