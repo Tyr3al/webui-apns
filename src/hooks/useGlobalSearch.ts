@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { List, Plus, Settings } from 'lucide-react';
 import { useSchemaStore, type SearchIndexEntry } from '@/stores/schemaStore';
-import { useAccountStore } from '@/stores/accountStore';
+import { usePermissionCheckers } from '@/hooks/usePermissions';
+import { isCreateOnly } from '@/lib/permissions';
 import { resolveObject } from '@/lib/schemaResolver';
 import type { Schema } from '@/types/schema';
 
 const MAX_RESULTS = 15;
-const DEBOUNCE_MS = 300;
 
 const TYPE_ORDER: Record<SearchIndexEntry['type'], number> = {
   link: 0,
@@ -61,29 +61,16 @@ export function friendlyName(viewName: string): string {
 export function useGlobalSearch(onAfterSelect?: () => void) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const deferredQuery = useDeferredValue(query);
 
   const schema = useSchemaStore((s) => s.schema);
   const searchIndex = useSchemaStore((s) => s.searchIndex);
-  const hasObjectPermission = useAccountStore((s) => s.hasObjectPermission);
-
-  const handleQueryChange = useCallback((value: string) => {
-    setQuery(value);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setDebouncedQuery(value), DEBOUNCE_MS);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+  const { hasObjectPermission } = usePermissionCheckers();
 
   const results = useMemo(() => {
-    if (!debouncedQuery.trim() || !schema) return [];
+    if (!deferredQuery.trim() || !schema) return [];
 
-    const tokens = debouncedQuery
+    const tokens = deferredQuery
       .toLowerCase()
       .split(/\s+/)
       .filter((s) => s.length > 0);
@@ -96,12 +83,15 @@ export function useGlobalSearch(onAfterSelect?: () => void) {
       }
       const resolved = resolveObject(schema, entry.viewName);
       if (!resolved) return false;
-      return hasObjectPermission(resolved.permissionPrefix, 'Get');
+      return hasObjectPermission(
+        resolved.permissionPrefix,
+        isCreateOnly(schema, resolved.permissionPrefix) ? 'Create' : 'Get',
+      );
     });
 
     filtered.sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
     return filtered.slice(0, MAX_RESULTS);
-  }, [debouncedQuery, searchIndex, schema, hasObjectPermission]);
+  }, [deferredQuery, searchIndex, schema, hasObjectPermission]);
 
   const groups = useMemo(() => {
     const map = new Map<SearchIndexEntry['type'], SearchIndexEntry[]>();
@@ -123,11 +113,7 @@ export function useGlobalSearch(onAfterSelect?: () => void) {
     [schema, navigate, onAfterSelect],
   );
 
-  const reset = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setQuery('');
-    setDebouncedQuery('');
-  }, []);
+  const reset = useCallback(() => setQuery(''), []);
 
-  return { query, setQuery: handleQueryChange, debouncedQuery, results, groups, selectEntry, reset, schema };
+  return { query, setQuery, deferredQuery, results, groups, selectEntry, reset, schema };
 }

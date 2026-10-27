@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { startAuthFlow } from '@/services/auth/oauth';
+import { errorMessage } from '@/lib/jmapErrors';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -23,6 +25,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const sessionExpired = useAuthStore((s) => s.sessionExpired);
 
   useDocumentTitle(t('login.title', 'Sign in'));
 
@@ -37,7 +40,7 @@ export default function LoginPage() {
     try {
       await startAuthFlow(trimmed, originalPath);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('login.error', 'An unexpected error occurred'));
+      setError(errorMessage(err, t('login.error', 'An unexpected error occurred')));
       setLoading(false);
     }
   }
@@ -71,6 +74,11 @@ export default function LoginPage() {
             {error && (
               <p className="text-sm text-destructive" role="alert">
                 {error}
+              </p>
+            )}
+            {!error && sessionExpired && (
+              <p className="text-center text-sm text-muted-foreground" role="status">
+                {t('errors.sessionExpired', 'Your session has expired. Please sign in again.')}
               </p>
             )}
 

@@ -41,16 +41,25 @@ function BufferedExprInput({
   );
 }
 
-interface ExpressionEditorProps {
-  value: {
-    match: Record<string, { if: string; then: string }>;
-    else: string;
-  };
-  onChange: (value: { match: Record<string, { if: string; then: string }>; else: string }) => void;
-  readOnly?: boolean;
+export interface ExpressionValue {
+  match: Record<string, { if: string; then: string }>;
+  else: string;
 }
 
-export function ExpressionEditor({ value, onChange, readOnly = false }: ExpressionEditorProps) {
+interface ExpressionEditorProps {
+  value: ExpressionValue;
+  onChange: (value: ExpressionValue) => void;
+  readOnly?: boolean;
+  label?: string;
+  control?: {
+    id?: string;
+    'aria-invalid'?: boolean;
+    'aria-describedby'?: string;
+    'aria-labelledby'?: string;
+  };
+}
+
+export function ExpressionEditor({ value, onChange, readOnly = false, label, control }: ExpressionEditorProps) {
   const { t } = useTranslation();
   const [nextIndex, setNextIndex] = useState(() => {
     const keys = Object.keys(value.match).map(Number).filter(Number.isFinite);
@@ -101,6 +110,7 @@ export function ExpressionEditor({ value, onChange, readOnly = false }: Expressi
                 value={entry.if}
                 onCommit={(v) => handleConditionChange(key, 'if', v)}
                 disabled={readOnly}
+                aria-label={t('expression.conditionN', 'Condition {{n}}', { n: index + 1 })}
                 placeholder={t('expression.condition', 'Condition')}
                 className="flex-1"
               />
@@ -111,6 +121,7 @@ export function ExpressionEditor({ value, onChange, readOnly = false }: Expressi
                   size="icon"
                   className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                   onClick={() => handleRemove(key)}
+                  aria-label={t('expression.removeCondition', 'Remove condition {{n}}', { n: index + 1 })}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -124,6 +135,7 @@ export function ExpressionEditor({ value, onChange, readOnly = false }: Expressi
                 value={entry.then}
                 onCommit={(v) => handleConditionChange(key, 'then', v)}
                 disabled={readOnly}
+                aria-label={t('expression.resultN', 'Result {{n}}', { n: index + 1 })}
                 placeholder={t('expression.result', 'Result')}
                 className="flex-1"
               />
@@ -160,6 +172,13 @@ export function ExpressionEditor({ value, onChange, readOnly = false }: Expressi
           value={value.else}
           onCommit={handleElseChange}
           disabled={readOnly}
+          id={control?.id}
+          aria-invalid={control?.['aria-invalid']}
+          aria-label={
+            matchEntries.length > 0
+              ? t('expression.defaultValue', 'Default value')
+              : (label ?? t('expression.value', 'Value'))
+          }
           placeholder={
             matchEntries.length > 0 ? t('expression.defaultValue', 'Default value') : t('expression.value', 'Value')
           }

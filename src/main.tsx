@@ -17,6 +17,9 @@ import { AdminPanel } from './pages/AdminPanel.lazy';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { getBasePath } from './lib/basePath';
 import { loadLogoOnce } from './lib/logoCache';
+import { applyAccessTokenOverride } from './stores/authStore';
+import { QueryProvider } from './data/QueryProvider';
+import { bindQueryClientToAuth, queryClient } from './data/queryClient';
 
 (() => {
   try {
@@ -36,6 +39,8 @@ import { loadLogoOnce } from './lib/logoCache';
 })();
 
 loadLogoOnce();
+applyAccessTokenOverride();
+bindQueryClientToAuth(queryClient);
 
 const basePath = getBasePath();
 
@@ -72,6 +77,8 @@ const router = createBrowserRouter(
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <QueryProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryProvider>
   </StrictMode>,
 );

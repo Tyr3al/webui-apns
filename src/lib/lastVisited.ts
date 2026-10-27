@@ -8,6 +8,7 @@ import {
   findFirstAccessibleLinkInLayout,
   findFirstVisibleLinkInLayout,
   isLinkAccessible,
+  layoutContainsLink,
   type CanGet,
   type HasPermission,
 } from '@/lib/layout';
@@ -43,11 +44,15 @@ export function sectionLandingLink(
   hasPerm?: HasPermission,
 ): string | null {
   const last = readAll()[layout.name];
-  if (typeof last === 'string' && isLinkAccessible(schema, last, edition, canGet, hasPerm)) {
+  if (
+    typeof last === 'string' &&
+    layoutContainsLink(layout, last) &&
+    isLinkAccessible(schema, last, edition, canGet, hasPerm)
+  ) {
     return last;
   }
   return (
     findFirstAccessibleLinkInLayout(schema, layout, edition, canGet, hasPerm) ??
-    findFirstVisibleLinkInLayout(schema, layout, edition, canGet, hasPerm)
+    findFirstVisibleLinkInLayout(schema, layout, canGet, hasPerm)
   );
 }

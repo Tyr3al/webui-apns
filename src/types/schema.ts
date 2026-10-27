@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
  */
 
+// SPDX-SnippetBegin
+// SPDX-FileCopyrightText: 2020 Stalwart Labs LLC <hello@stalw.art>
+// SPDX-License-Identifier: LicenseRef-SEL
 import type { Dashboard } from '@/features/dashboard/types/schema';
+// SPDX-SnippetEnd
 
 export interface Schema {
   objects: Record<string, ObjectType>;
@@ -13,7 +17,11 @@ export interface Schema {
   forms: Record<string, Form>;
   lists: Record<string, List>;
   enums: Record<string, EnumVariant[]>;
+  // SPDX-SnippetBegin
+  // SPDX-FileCopyrightText: 2020 Stalwart Labs LLC <hello@stalw.art>
+  // SPDX-License-Identifier: LicenseRef-SEL
   dashboards: Dashboard[];
+  // SPDX-SnippetEnd
   layouts: Layout[];
 }
 
@@ -208,7 +216,8 @@ export type StringFormat =
   | 'uri'
   | 'color'
   | 'text'
-  | 'html';
+  | 'html'
+  | 'sieve';
 
 export type NumberFormat = 'integer' | 'unsignedInteger' | 'float' | 'size' | 'duration';
 
@@ -377,13 +386,18 @@ export interface LayoutSubItemLink {
   viewName: string;
 }
 
+// SPDX-SnippetBegin
+// SPDX-FileCopyrightText: 2020 Stalwart Labs LLC <hello@stalw.art>
+// SPDX-License-Identifier: LicenseRef-SEL
 export type {
   Dashboard,
   Card,
   Chart,
   Series,
   Aggregate,
+  MetricScope,
   ChartKind,
   CardSource,
   MetricFormat,
 } from '@/features/dashboard/types/schema';
+// SPDX-SnippetEnd

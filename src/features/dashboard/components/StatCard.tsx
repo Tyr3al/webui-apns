@@ -1,38 +1,41 @@
 /*
  * SPDX-FileCopyrightText: 2020 Stalwart Labs LLC <hello@stalw.art>
  *
- * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
+ * SPDX-License-Identifier: LicenseRef-SEL
  */
 
 import { useMemo } from 'react';
-import * as LucideIcons from 'lucide-react';
-import { Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { HelpCircle, Info } from 'lucide-react';
+import { DynamicIcon } from '@/components/common/DynamicIcon';
 import { LineChart, Line } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HelpTooltip } from '@/components/common/HelpTooltip';
 import type { Card as CardSchema } from '../types/schema';
 import type { Metric } from '../types/metrics';
 import { cardValue, formatValue, sparklineData, computeDelta } from '../helpers';
 import { useLiveMetricsStore } from '../stores/liveMetricsStore';
 import { getChartColor } from '@/components/ui/chart';
+import { formatPercent } from '@/lib/format';
 
-const warnedIcons = new Set<string>();
-
-function LucideIcon({ name, className }: { name: string; className?: string }) {
-  const formatted = name
-    .split('-')
-    .map((s) => s[0].toUpperCase() + s.slice(1))
-    .join('');
-  const IconComp = (LucideIcons as Record<string, unknown>)[formatted] as LucideIcons.LucideIcon | undefined;
-  if (!IconComp) {
-    if (import.meta.env.DEV && !warnedIcons.has(name)) {
-      warnedIcons.add(name);
-      console.warn(`Unknown icon name: "${name}"`);
-    }
-    return <LucideIcons.HelpCircle className={className} />;
-  }
-  return <IconComp className={className} />;
+function DeltaBadge({ pct, direction }: { pct: number; direction: 'up' | 'down' | 'neutral' }) {
+  const { t } = useTranslation();
+  const value = formatPercent(Math.abs(pct), Number.isInteger(pct) ? 0 : 1);
+  const label =
+    direction === 'up'
+      ? t('dashboard.deltaUp', 'Up {{value}}', { value })
+      : direction === 'down'
+        ? t('dashboard.deltaDown', 'Down {{value}}', { value })
+        : t('dashboard.deltaNone', 'No change');
+  return (
+    <Badge variant="secondary" className="text-xs font-normal text-muted-foreground">
+      <span className="sr-only">{label}</span>
+      <span aria-hidden="true">
+        {direction === 'up' ? `\u2191 ${value}` : direction === 'down' ? `\u2193 ${value}` : '\u2013'}
+      </span>
+    </Badge>
+  );
 }
 
 interface StatCardProps {
@@ -70,38 +73,21 @@ export function StatCard({ card, historySamples, historyWindow }: StatCardProps)
   }, [card, historySamples, from, to]);
 
   return (
-    <Card>
+    <Card role="group" aria-label={card.title}>
       <CardContent className="p-4">
         <div className="flex items-center gap-2">
-          <LucideIcon name={card.icon} className="h-4 w-4 text-muted-foreground" />
+          <DynamicIcon name={card.icon} fallback={HelpCircle} className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium text-muted-foreground">{card.title}</span>
-          {card.description && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
-                  <p className="text-xs">{card.description}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+          {card.description && <HelpTooltip content={card.description} label={card.title} icon={Info} />}
         </div>
 
-        <div className="mt-2 text-2xl font-bold">{formattedValue}</div>
+        <div data-slot="stat-value" className="mt-2 text-2xl font-bold">
+          {formattedValue}
+        </div>
 
         {(delta || sparkline) && (
           <div className="mt-1 flex items-center gap-2">
-            {delta && (
-              <Badge variant="secondary" className="text-xs font-normal text-muted-foreground">
-                {delta.direction === 'up'
-                  ? `\u2191 ${Math.abs(delta.pct)}%`
-                  : delta.direction === 'down'
-                    ? `\u2193 ${Math.abs(delta.pct)}%`
-                    : '\u2013'}
-              </Badge>
-            )}
+            {delta && <DeltaBadge pct={delta.pct} direction={delta.direction} />}
             {sparkline && (
               <LineChart width={64} height={32} data={sparkline}>
                 <Line

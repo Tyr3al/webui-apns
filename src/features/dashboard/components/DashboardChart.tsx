@@ -1,10 +1,10 @@
 /*
  * SPDX-FileCopyrightText: 2020 Stalwart Labs LLC <hello@stalw.art>
  *
- * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
+ * SPDX-License-Identifier: LicenseRef-SEL
  */
 
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -19,52 +19,15 @@ import {
   Legend,
 } from 'recharts';
 
-function ChartSizedContainer({
-  height,
-  children,
-}: {
-  height: number;
-  children: (width: number, height: number) => React.ReactNode;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const w = entry.contentRect.width;
-        if (w > 0) setWidth(w);
-      }
-    });
-    ro.observe(el);
-    const w = el.getBoundingClientRect().width;
-    if (w > 0) setWidth(w);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} style={{ height }}>
-      {width > 0 && children(width, height)}
-    </div>
-  );
-}
 import { Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HelpTooltip } from '@/components/common/HelpTooltip';
 import { getChartColor } from '@/components/ui/chart';
 import { ChartTooltipContent } from '@/components/ui/chart';
 import type { Chart as ChartSchema } from '../types/schema';
 import type { Metric, Period } from '../types/metrics';
-import {
-  bucketize,
-  bucketTimestamps,
-  getBucketCount,
-  seriesBucketValue,
-  formatTimeTick,
-  formatValue,
-} from '../helpers';
+import { bucketTimestamps, bucketValues, getBucketCount, formatTimeTick, formatValue } from '../helpers';
+import { ChartSizedContainer } from './ChartSizedContainer';
 
 interface DashboardChartProps {
   chart: ChartSchema;
@@ -79,7 +42,7 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
   const valueFormat = chart.valueFormat ?? 'number';
 
   const data = useMemo(() => {
-    const buckets = bucketize(historySamples, from, to, bucketCount);
+    const seriesValues = chart.series.map((series) => bucketValues(series, historySamples, from, to, bucketCount));
     const timestamps = bucketTimestamps(from, to, bucketCount);
 
     const points = timestamps.map((ts, i) => {
@@ -87,9 +50,9 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
         time: ts.getTime(),
         timeLabel: formatTimeTick(ts, period),
       };
-      for (const series of chart.series) {
-        point[series.label] = seriesBucketValue(series, buckets[i]);
-      }
+      chart.series.forEach((series, s) => {
+        point[series.label] = seriesValues[s][i];
+      });
       return point;
     });
 
@@ -226,22 +189,11 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
   };
 
   return (
-    <Card>
+    <Card role="figure" aria-label={chart.title}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <CardTitle className="text-base">{chart.title}</CardTitle>
-          {chart.description && (
-            <TooltipProvider>
-              <UiTooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
-                  <p className="text-xs">{chart.description}</p>
-                </TooltipContent>
-              </UiTooltip>
-            </TooltipProvider>
-          )}
+          {chart.description && <HelpTooltip content={chart.description} label={chart.title} icon={Info} />}
         </div>
       </CardHeader>
       <CardContent>
