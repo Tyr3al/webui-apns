@@ -6,7 +6,7 @@
 
 import type { Layout, LayoutSubItem, Schema } from '@/types/schema';
 import { resolveObject } from '@/lib/schemaResolver';
-import { isCommunityEdition } from '@/lib/permissions';
+import { isCommunityEdition, isCreateOnly } from '@/lib/permissions';
 
 export type CanGet = (permissionPrefix: string) => boolean;
 export type HasPermission = (permission: string) => boolean;
@@ -65,7 +65,9 @@ export function isLinkVisible(schema: Schema, viewName: string, canGet: CanGet, 
   const special = checkSpecialLink(schema, viewName, hasPerm, canGet);
   if (special !== null) return special.visible;
   const resolved = resolveObject(schema, viewName);
-  return resolved !== null && canGet(resolved.permissionPrefix);
+  if (resolved === null) return false;
+  if (isCreateOnly(schema, resolved.permissionPrefix)) return hasPerm?.(`${resolved.permissionPrefix}Create`) ?? false;
+  return canGet(resolved.permissionPrefix);
 }
 
 export function isLinkEnterprise(schema: Schema, viewName: string): boolean {

@@ -30,6 +30,22 @@ export function createPermissionCheckers(permissions: readonly string[]): Permis
   return checkers;
 }
 
+const definedPermissionsCache = new WeakMap<Schema, ReadonlySet<string>>();
+
+function definedPermissions(schema: Schema): ReadonlySet<string> {
+  let defined = definedPermissionsCache.get(schema);
+  if (!defined) {
+    defined = new Set((schema.enums['Permission'] ?? []).map((v) => v.name));
+    definedPermissionsCache.set(schema, defined);
+  }
+  return defined;
+}
+
+export function isCreateOnly(schema: Schema, permissionPrefix: string): boolean {
+  const defined = definedPermissions(schema);
+  return defined.has(`${permissionPrefix}Create`) && !defined.has(`${permissionPrefix}Get`);
+}
+
 export function canAccessView(
   schema: Schema | null | undefined,
   viewName: string,

@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { List, Plus, Settings } from 'lucide-react';
 import { useSchemaStore, type SearchIndexEntry } from '@/stores/schemaStore';
 import { usePermissionCheckers } from '@/hooks/usePermissions';
+import { isCreateOnly } from '@/lib/permissions';
 import { resolveObject } from '@/lib/schemaResolver';
 import type { Schema } from '@/types/schema';
 
@@ -82,7 +83,10 @@ export function useGlobalSearch(onAfterSelect?: () => void) {
       }
       const resolved = resolveObject(schema, entry.viewName);
       if (!resolved) return false;
-      return hasObjectPermission(resolved.permissionPrefix, 'Get');
+      return hasObjectPermission(
+        resolved.permissionPrefix,
+        isCreateOnly(schema, resolved.permissionPrefix) ? 'Create' : 'Get',
+      );
     });
 
     filtered.sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
