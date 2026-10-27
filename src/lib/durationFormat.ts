@@ -36,11 +36,6 @@ export function humanToBytes(value: number, unit: string): number {
   return Math.round(value * factor);
 }
 
-export function formatSize(bytes: number): string {
-  const { value, unit } = bytesToHuman(bytes);
-  return `${value} ${unit}`;
-}
-
 export const DURATION_UNITS = ['ms', 's', 'min', 'h', 'd'] as const;
 
 const DURATION_FACTORS: Record<string, number> = {
@@ -71,26 +66,4 @@ export function humanToMs(value: number, unit: string): number {
   const factor = DURATION_FACTORS[unit];
   if (factor === undefined) return value;
   return Math.round(value * factor);
-}
-
-export function formatDuration(ms: number): string {
-  if (ms === 0) return '0ms';
-
-  const d = Math.floor(ms / 86_400_000);
-  ms %= 86_400_000;
-  const h = Math.floor(ms / 3_600_000);
-  ms %= 3_600_000;
-  const m = Math.floor(ms / 60_000);
-  ms %= 60_000;
-  const s = Math.floor(ms / 1_000);
-  ms %= 1_000;
-
-  const parts: string[] = [];
-  if (d > 0) parts.push(`${d}d`);
-  if (h > 0) parts.push(`${h}h`);
-  if (m > 0) parts.push(`${m}m`);
-  if (s > 0) parts.push(`${s}s`);
-  if (ms > 0) parts.push(`${ms}ms`);
-
-  return parts.join(' ');
 }

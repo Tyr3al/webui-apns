@@ -11,6 +11,15 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { friendlyName, getActionInfo, getObjectKind, useGlobalSearch } from '@/hooks/useGlobalSearch';
 import type { SearchIndexEntry } from '@/stores/schemaStore';
 
+function uniqueEntries(entries: SearchIndexEntry[]): Array<[string, SearchIndexEntry]> {
+  const seen = new Map<string, SearchIndexEntry>();
+  for (const entry of entries) {
+    const key = [entry.type, entry.section, entry.viewName, entry.breadcrumb, entry.text].join('|');
+    if (!seen.has(key)) seen.set(key, entry);
+  }
+  return Array.from(seen);
+}
+
 interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,7 +28,7 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const { t } = useTranslation();
   const closePalette = useCallback(() => onOpenChange(false), [onOpenChange]);
-  const { query, setQuery, debouncedQuery, groups, selectEntry, reset, schema } = useGlobalSearch(closePalette);
+  const { query, setQuery, deferredQuery, groups, selectEntry, reset, schema } = useGlobalSearch(closePalette);
 
   const groupLabels: Record<SearchIndexEntry['type'], string> = useMemo(
     () => ({
@@ -48,27 +57,29 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             value={query}
             onValueChange={setQuery}
             trailing={
-              <kbd className="pointer-events-none ml-2 inline-flex h-5 shrink-0 select-none items-center rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              <kbd
+                aria-hidden="true"
+                className="pointer-events-none ml-2 inline-flex h-5 shrink-0 select-none items-center rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground"
+              >
                 ESC
               </kbd>
             }
           />
           <CommandList>
             <CommandEmpty>
-              {debouncedQuery.trim()
+              {deferredQuery.trim()
                 ? t('globalSearch.noResults', 'No results found.')
                 : t('globalSearch.typeToSearch', 'Type to search the admin panel.')}
             </CommandEmpty>
             {Array.from(groups.entries()).map(([type, entries]) => (
               <CommandGroup key={type} heading={groupLabels[type]}>
-                {entries.map((entry, idx) => {
+                {uniqueEntries(entries).map(([itemValue, entry]) => {
                   const objectKind = schema ? getObjectKind(schema, entry.viewName) : null;
                   const { label: actionLabel, Icon: ActionIcon } = getActionInfo(entry.type, objectKind, t);
-                  const itemValue = `${type}-${idx}-${entry.viewName}`;
 
                   return (
                     <CommandItem key={itemValue} value={itemValue} onSelect={() => selectEntry(entry)}>
-                      <ActionIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <ActionIcon aria-hidden="true" className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
                       <div className="flex flex-1 flex-col overflow-hidden">
                         <span className="truncate font-medium">{friendlyName(entry.text)}</span>
                         <span className="truncate text-xs text-muted-foreground">{entry.breadcrumb}</span>

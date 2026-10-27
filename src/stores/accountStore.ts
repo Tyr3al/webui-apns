@@ -5,10 +5,11 @@
  */
 
 import { create } from 'zustand';
+import { isCommunityEdition } from '@/lib/permissions';
 
-type Edition = 'enterprise' | 'community' | 'oss';
+export type Edition = 'enterprise' | 'community' | (string & {});
 
-interface AccountState {
+export interface AccountState {
   permissions: string[];
   edition: Edition;
   locale: string;
@@ -35,3 +36,5 @@ export const useAccountStore = create<AccountState>()((set, get) => ({
     return get().permissions.includes(`${prefix}${action}`);
   },
 }));
+
+export const selectIsCommunity = (s: AccountState): boolean => isCommunityEdition(s.edition);

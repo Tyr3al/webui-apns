@@ -125,17 +125,7 @@ This starts Vite's development server with hot module replacement, typically at 
 
 ## Testing
 
-Run the unit tests (Vitest):
-
-```
-npm test
-```
-
-Run tests in watch mode:
-
-```
-npm run test:watch
-```
+Unit and end-to-end tests are maintained in a separate repository.
 
 ## Building for production
 

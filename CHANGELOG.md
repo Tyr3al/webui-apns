@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
+## [2.0.1-apns.1] - 2026-10-27
+
+### Changed
+- Rebased onto upstream [v2.0.1](https://github.com/stalwartlabs/webui/blob/main/CHANGELOG.md) (from v1.0.11). This WebUI requires Stalwart v1.0.0 or later (`minServerVersion`), and v1.0.0+ servers reject any WebUI bundle that is not v2; use it together with `1.0.0-apns.1` or later of the fork's server.
+- Ported the XAPS pages and hooks to the reworked layout/form code: Push Devices stays hidden without account read permission, My Devices stays visible to everyone, and saving a Role or Account still refreshes the signed-in user's permissions.
+- The XAPS settings field is now `enable`, like every other object.
+
 ### Fixed
 - Push Devices: per-device action buttons now line up with their device row (one table row per device, the account cell spans them). On narrow screens both Push Devices and My Devices show one card per device instead of a horizontally scrolling table.
 

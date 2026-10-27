@@ -1,22 +1,29 @@
 /*
  * SPDX-FileCopyrightText: 2020 Stalwart Labs LLC <hello@stalw.art>
  *
- * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
+ * SPDX-License-Identifier: LicenseRef-SEL
  */
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AlertCircle } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSchemaStore } from '@/stores/schemaStore';
 import type { Dashboard } from '../types/schema';
+import type { Metric } from '../types/metrics';
 import { useDashboardStore } from '../stores/dashboardStore';
 import { useLiveMetricsStore } from '../stores/liveMetricsStore';
-import { useHistoryMetricsStore } from '../stores/historyMetricsStore';
-import { collectHistoryMetricIds, collectLiveMetricIds, periodKey, periodWindow, deltaHistograms } from '../helpers';
+import { useClusterNodes, useHistoryMetrics } from '../queries';
+import { useCanAccess } from '@/hooks/usePermissions';
+import { errorMessage } from '@/lib/jmapErrors';
+import { collectHistoryMetricIds, collectLiveMetricIds, distinctNodeIds, nodeOptions, periodWindow } from '../helpers';
 import { StatCard } from './StatCard';
 import { DashboardChart } from './DashboardChart';
 import { PeriodSelector } from './PeriodSelector';
+import { NodeSelector } from './NodeSelector';
+
+const EMPTY_METRICS: Metric[] = [];
 
 interface DashboardViewProps {
   dashboardId: string;
@@ -24,13 +31,13 @@ interface DashboardViewProps {
 }
 
 export function DashboardView({ dashboardId, section }: DashboardViewProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const schema = useSchemaStore((s) => s.schema);
   const period = useDashboardStore((s) => s.period);
-  const fetchHistory = useHistoryMetricsStore((s) => s.fetch);
-  const refreshHistory = useHistoryMetricsStore((s) => s.refresh);
-  const historyStatus = useHistoryMetricsStore((s) => s.status);
-  const historyCache = useHistoryMetricsStore((s) => s.cache);
+  const nodeId = useDashboardStore((s) => s.nodeId);
+  const setNodeId = useDashboardStore((s) => s.setNodeId);
+  const canReadNodes = useCanAccess('x:ClusterNode', 'Get');
   const subscribeLive = useLiveMetricsStore((s) => s.subscribe);
   const unsubscribeLive = useLiveMetricsStore((s) => s.unsubscribe);
   const liveStatus = useLiveMetricsStore((s) => s.status);
@@ -51,28 +58,17 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
   );
   const liveIds = useMemo(() => (dashboard ? collectLiveMetricIds(dashboard.cards) : new Set<string>()), [dashboard]);
 
-  const cacheKey = dashboard ? `${dashboard.id}|${periodKey(period)}` : '';
-  const [fetchVersion, setFetchVersion] = useState(0);
-
-  useEffect(() => {
-    if (!dashboard || historyIds.size === 0) return;
-    let cancelled = false;
-    fetchHistory(dashboard.id, period, historyIds).then(() => {
-      if (!cancelled) setFetchVersion((v) => v + 1);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [dashboard, period, historyIds, fetchHistory]);
-
-  const { historySamples, historyWindow } = useMemo(() => {
-    void fetchVersion;
-    const raw = historyCache.get(cacheKey)?.metrics ?? [];
-    return {
-      historySamples: deltaHistograms(raw),
-      historyWindow: periodWindow(period),
-    };
-  }, [historyCache, cacheKey, fetchVersion, period]);
+  const history = useHistoryMetrics(period, historyIds, nodeId);
+  const allNodesHistory = useHistoryMetrics(period, historyIds, null, nodeId === null);
+  const clusterNodes = useClusterNodes(canReadNodes);
+  const historySamples = history.data?.metrics ?? EMPTY_METRICS;
+  const historyWindow = history.data?.window ?? periodWindow(period);
+  const nodes = nodeOptions(
+    clusterNodes.data,
+    distinctNodeIds(allNodesHistory.data?.metrics ?? historySamples),
+    nodeId,
+  );
+  const showNodeSelector = nodes.length > 1 || nodeId !== null;
 
   useEffect(() => {
     if (liveIds.size > 0) {
@@ -83,18 +79,19 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
     };
   }, [liveIds, subscribeLive, unsubscribeLive]);
 
-  const isLoading = historyStatus.get(cacheKey) === 'loading';
+  const isLoading = history.isFetching;
+  const { refetch: refetchHistory } = history;
 
   const handleRefresh = useCallback(() => {
-    if (dashboard && historyIds.size > 0) {
-      refreshHistory(dashboard.id, period, historyIds).then(() => setFetchVersion((v) => v + 1));
-    }
-  }, [dashboard, period, historyIds, refreshHistory]);
+    if (historyIds.size > 0) void refetchHistory();
+  }, [historyIds, refetchHistory]);
 
   if (!dashboard) {
     if (dashboards.length === 0) {
       return (
-        <div className="flex items-center justify-center p-8 text-muted-foreground">No dashboards configured.</div>
+        <div className="flex items-center justify-center p-8 text-muted-foreground">
+          {t('dashboard.noDashboards', 'No dashboards configured.')}
+        </div>
       );
     }
     return null;
@@ -102,10 +99,14 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         {dashboards.length > 1 && (
-          <Tabs value={dashboardId} onValueChange={(id) => navigate(`/${section}/Dashboard/${id}`)}>
-            <TabsList>
+          <Tabs
+            className="min-w-0 max-w-full"
+            value={dashboardId}
+            onValueChange={(id) => navigate(`/${section}/Dashboard/${id}`)}
+          >
+            <TabsList className="max-w-full justify-start overflow-x-auto">
               {dashboards.map((d) => (
                 <TabsTrigger key={d.id} value={d.id}>
                   {d.label}
@@ -116,12 +117,28 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
         )}
         {dashboards.length === 1 && <h1 className="text-xl font-semibold">{dashboard.label}</h1>}
 
-        <PeriodSelector onRefresh={handleRefresh} loading={isLoading} />
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          {showNodeSelector && <NodeSelector nodes={nodes} value={nodeId} onChange={setNodeId} />}
+          <PeriodSelector onRefresh={handleRefresh} loading={isLoading} />
+        </div>
       </div>
 
+      {history.isError && (
+        <div
+          role="alert"
+          className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          <AlertCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
+          {errorMessage(history.error, t('dashboard.failedFetchMetrics', 'Failed to fetch metrics'))}
+        </div>
+      )}
+
       {liveStatus === 'error' && liveError && (
-        <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircle className="h-4 w-4 shrink-0" />
+        <div
+          role="alert"
+          className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          <AlertCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
           {liveError}
         </div>
       )}

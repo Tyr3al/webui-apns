@@ -4,55 +4,90 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
  */
 
-import { describe, expect, it, vi } from 'vitest';
-import { isLinkVisible } from './layout';
+import { describe, expect, it } from 'vitest';
 import type { Schema } from '@/types/schema';
+import { isLinkVisible } from '@/lib/layout';
+import { createPermissionCheckers, isCreateOnly } from '@/lib/permissions';
 
-const schema: Schema = {
-  objects: {},
+const permission = (name: string) => ({ name, label: name });
+
+const schema = {
+  objects: {
+    'x:Action': { type: 'object', description: '', permissionPrefix: 'sysAction' },
+    'x:Domain': { type: 'object', description: '', permissionPrefix: 'sysDomain' },
+    'x:Legacy': { type: 'object', description: '', permissionPrefix: 'sysLegacy' },
+    'x:DomainView': { type: 'view', objectName: 'x:Domain' },
+  },
   schemas: {},
   fields: {},
   forms: {},
   lists: {},
-  enums: {},
+  enums: {
+    Permission: ['sysActionCreate', 'sysDomainGet', 'sysDomainCreate'].map(permission),
+  },
   dashboards: [],
   layouts: [],
-};
+} as unknown as Schema;
 
-describe('XAPS custom-component visibility', () => {
-  it('shows the administrative devices page only with account read permission', () => {
-    const canGet = vi.fn((prefix: string) => prefix === 'sysAccount');
+function visible(viewName: string, granted: string[]): boolean {
+  const { canGet, hasPermission } = createPermissionCheckers(granted);
+  return isLinkVisible(schema, viewName, canGet, hasPermission);
+}
 
-    expect(isLinkVisible(schema, 'CustomComponent/XapsDevices', 'community', canGet)).toBe(true);
-    expect(canGet).toHaveBeenCalledWith('sysAccount');
-  });
-
-  it('hides the administrative devices page without account read permission', () => {
-    expect(isLinkVisible(schema, 'CustomComponent/XapsDevices', 'community', () => false)).toBe(false);
-  });
-
-  it('keeps the self-service devices page visible without administrative permissions', () => {
-    expect(isLinkVisible(schema, 'CustomComponent/XapsMyDevices', 'community', () => false)).toBe(true);
+describe('isCreateOnly', () => {
+  it('detects objects whose only defined permission is Create', () => {
+    expect(isCreateOnly(schema, 'sysAction')).toBe(true);
+    expect(isCreateOnly(schema, 'sysDomain')).toBe(false);
+    expect(isCreateOnly(schema, 'sysLegacy')).toBe(false);
   });
 });
 
-describe('XAPS settings visibility', () => {
-  const xapsSchema: Schema = {
-    ...schema,
-    objects: {
-      'x:Xaps': {
-        type: 'singleton',
-        description: 'Apple Push settings',
-        permissionPrefix: 'sysXaps',
-      },
-    },
-  };
-
-  it('shows XAPS settings with XAPS read permission', () => {
-    expect(isLinkVisible(xapsSchema, 'x:Xaps', 'community', (prefix) => prefix === 'sysXaps')).toBe(true);
+describe('isLinkVisible', () => {
+  it('shows create-only objects to users holding the Create permission', () => {
+    expect(visible('x:Action', ['sysActionCreate'])).toBe(true);
+    expect(visible('x:Action', [])).toBe(false);
   });
 
-  it('hides XAPS settings without XAPS read permission', () => {
-    expect(isLinkVisible(xapsSchema, 'x:Xaps', 'community', () => false)).toBe(false);
+  it('requires Get for objects that define it', () => {
+    expect(visible('x:Domain', ['sysDomainGet'])).toBe(true);
+    expect(visible('x:DomainView', ['sysDomainGet'])).toBe(true);
+    expect(visible('x:Domain', ['sysDomainCreate'])).toBe(false);
+  });
+
+  it('falls back to Get for objects missing from the permission enum', () => {
+    expect(visible('x:Legacy', ['sysLegacyGet'])).toBe(true);
+    expect(visible('x:Legacy', ['sysLegacyCreate'])).toBe(false);
+  });
+});
+
+describe('XAPS custom-component visibility', () => {
+  const xapsSchema = {
+    ...schema,
+    objects: {
+      ...schema.objects,
+      'x:Xaps': { type: 'singleton', description: 'Apple Push settings', permissionPrefix: 'sysXaps' },
+    },
+    enums: {
+      Permission: ['sysAccountGet', 'sysXapsGet'].map(permission),
+    },
+  } as unknown as Schema;
+
+  function xapsVisible(viewName: string, granted: string[]): boolean {
+    const { canGet, hasPermission } = createPermissionCheckers(granted);
+    return isLinkVisible(xapsSchema, viewName, canGet, hasPermission);
+  }
+
+  it('shows the administrative devices page only with account read permission', () => {
+    expect(xapsVisible('CustomComponent/XapsDevices', ['sysAccountGet'])).toBe(true);
+    expect(xapsVisible('CustomComponent/XapsDevices', [])).toBe(false);
+  });
+
+  it('keeps the self-service devices page visible without administrative permissions', () => {
+    expect(xapsVisible('CustomComponent/XapsMyDevices', [])).toBe(true);
+  });
+
+  it('shows XAPS settings only with XAPS read permission', () => {
+    expect(xapsVisible('x:Xaps', ['sysXapsGet'])).toBe(true);
+    expect(xapsVisible('x:Xaps', [])).toBe(false);
   });
 });
