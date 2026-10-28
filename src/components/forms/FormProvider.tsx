@@ -23,6 +23,7 @@ interface FormProviderProps {
   hideEnterprise?: boolean;
   recordLabel?: string;
   baseline?: unknown;
+  tenantId?: string | null;
   children: ReactNode;
 }
 
@@ -33,6 +34,7 @@ export function FormProvider({
   hideEnterprise = false,
   recordLabel = '',
   baseline = null,
+  tenantId = null,
   children,
 }: FormProviderProps) {
   const isCommunity = useIsCommunity();
@@ -46,6 +48,7 @@ export function FormProvider({
     idPrefix,
     recordLabel,
     baseline,
+    tenantId,
   };
   const scope: FieldScope = { path: [], readOnly };
   return (

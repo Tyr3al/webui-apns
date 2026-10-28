@@ -235,8 +235,8 @@ function MapKeyObjectIdInput({
   onChange: (v: string) => void;
   existingKeys: Record<string, unknown>;
 }) {
-  const { schema } = useFormContext();
-  const list = useObjectOptions(objectName, schema);
+  const { schema, tenantId } = useFormContext();
+  const list = useObjectOptions(objectName, schema, tenantId);
   const noPermissionMessage = useNoPermissionMessage(schema, objectName);
   return (
     <div className="flex flex-1 items-center gap-2">

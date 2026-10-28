@@ -78,6 +78,23 @@ export function resolveSchema(schema: Schema, objectName: string): ResolvedSchem
   };
 }
 
+export const TENANT_PROPERTY = 'memberTenantId';
+
+function hasTenantProperty(schema: Schema, schemaName: string | undefined): boolean {
+  if (schemaName === undefined) return false;
+  const fields = schema.fields[schemaName];
+  return fields !== undefined && Object.hasOwn(fields.properties, TENANT_PROPERTY);
+}
+
+export function isTenantScoped(schema: Schema, viewOrObjectName: string): boolean {
+  const entry = schema.objects[viewOrObjectName];
+  const objectName = entry?.type === 'view' ? entry.objectName : viewOrObjectName;
+  const schemaEntry = schema.schemas[objectName];
+  if (!schemaEntry) return false;
+  if (schemaEntry.type === 'single') return hasTenantProperty(schema, schemaEntry.schemaName);
+  return schemaEntry.variants.some((v) => hasTenantProperty(schema, v.schemaName));
+}
+
 export function resolveList(schema: Schema, viewName: string, objectName: string): List | null {
   return schema.lists[viewName] ?? schema.lists[objectName] ?? null;
 }

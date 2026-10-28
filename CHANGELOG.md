@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.2] - 2026-10-28
+
+### Added
+
+### Changed
+- Object pickers in forms are now scoped to the tenant of the record being edited: for objects that belong to a tenant (`memberTenantId`), only options from the same tenant are offered.
+
+### Fixed
+
 ## [2.0.1] - 2026-10-27
 
 ### Added
