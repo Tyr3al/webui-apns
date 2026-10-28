@@ -52,8 +52,7 @@ export default function OAuthCallback() {
           throw new Error(t('oauth.missingParams', 'Missing authorization code or state parameter'));
         }
 
-        const { codeVerifier, tokenEndpoint, state, returnUrl, endSessionEndpoint, clientId, revocationEndpoint } =
-          getStoredOAuthData();
+        const { codeVerifier, tokenEndpoint, state, returnUrl, endSessionEndpoint, clientId } = getStoredOAuthData();
 
         if (!state || state !== stateParam) {
           throw new Error(t('oauth.stateMismatch', 'State parameter mismatch. Please try logging in again.'));
@@ -76,7 +75,6 @@ export default function OAuthCallback() {
             tokenEndpoint,
             endSessionEndpoint,
             clientId,
-            revocationEndpoint,
           );
 
         clearStoredOAuthData();

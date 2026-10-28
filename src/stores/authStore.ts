@@ -19,7 +19,6 @@ interface AuthState {
   tokenLifetime: number | null;
   tokenEndpoint: string | null;
   endSessionEndpoint: string | null;
-  revocationEndpoint: string | null;
   clientId: string | null;
   accounts: Record<string, AccountInfo>;
   primaryAccountId: string | null;
@@ -36,7 +35,6 @@ interface AuthState {
     tokenEndpoint: string,
     endSessionEndpoint?: string | null,
     clientId?: string | null,
-    revocationEndpoint?: string | null,
   ) => void;
   setSession: (
     accounts: Record<string, AccountInfo>,
@@ -63,7 +61,6 @@ export const useAuthStore = create<AuthState>()(
       tokenLifetime: null,
       tokenEndpoint: null,
       endSessionEndpoint: null,
-      revocationEndpoint: null,
       clientId: null,
       accounts: {},
       primaryAccountId: null,
@@ -73,7 +70,7 @@ export const useAuthStore = create<AuthState>()(
       maxObjectsInSet: 500,
       sessionExpired: false,
 
-      setTokens: (access, refresh, expiresIn, tokenEndpoint, endSessionEndpoint, clientId, revocationEndpoint) => {
+      setTokens: (access, refresh, expiresIn, tokenEndpoint, endSessionEndpoint, clientId) => {
         const lifetime = Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn * 1000 : null;
         set({
           accessToken: access,
@@ -83,7 +80,6 @@ export const useAuthStore = create<AuthState>()(
           tokenEndpoint,
           endSessionEndpoint: endSessionEndpoint === undefined ? get().endSessionEndpoint : endSessionEndpoint,
           clientId: clientId === undefined ? get().clientId : clientId,
-          revocationEndpoint: revocationEndpoint === undefined ? get().revocationEndpoint : revocationEndpoint,
           sessionExpired: false,
         });
       },
@@ -115,7 +111,6 @@ export const useAuthStore = create<AuthState>()(
           tokenLifetime: null,
           tokenEndpoint: null,
           endSessionEndpoint: null,
-          revocationEndpoint: null,
           clientId: null,
           accounts: {},
           primaryAccountId: null,
@@ -167,7 +162,6 @@ export const useAuthStore = create<AuthState>()(
           tokenLifetime: state.tokenLifetime,
           tokenEndpoint: state.tokenEndpoint,
           endSessionEndpoint: state.endSessionEndpoint,
-          revocationEndpoint: state.revocationEndpoint,
           clientId: state.clientId,
           activeAccountId: state.activeAccountId,
         }) as AuthState,

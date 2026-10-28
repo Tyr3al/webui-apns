@@ -18,7 +18,6 @@ export interface DiscoveryResponse {
   authorization_endpoint: string;
   token_endpoint: string;
   end_session_endpoint?: string;
-  revocation_endpoint?: string;
   scopes_supported?: string[];
   client_id_metadata_document_supported?: boolean;
   stalwart_required_scopes?: string[];
@@ -144,7 +143,7 @@ function getRedirectUri(): string {
 
 export async function startAuthFlow(username: string, returnUrl?: string | null): Promise<void> {
   const discovery = await discover(username);
-  const { authorization_endpoint, token_endpoint, end_session_endpoint, revocation_endpoint } = discovery;
+  const { authorization_endpoint, token_endpoint, end_session_endpoint } = discovery;
 
   const clientId = resolveOAuthClientId(discovery.client_id_metadata_document_supported === true);
   if (!clientId) {
@@ -180,11 +179,6 @@ export async function startAuthFlow(username: string, returnUrl?: string | null)
   } else {
     sessionStorage.removeItem(`${SESSION_PREFIX}end_session_endpoint`);
   }
-  if (revocation_endpoint) {
-    sessionStorage.setItem(`${SESSION_PREFIX}revocation_endpoint`, revocation_endpoint);
-  } else {
-    sessionStorage.removeItem(`${SESSION_PREFIX}revocation_endpoint`);
-  }
 
   const params = new URLSearchParams({
     response_type: 'code',
@@ -212,7 +206,6 @@ export function getStoredOAuthData() {
     state: sessionStorage.getItem(`${SESSION_PREFIX}state`),
     returnUrl: sessionStorage.getItem(`${SESSION_PREFIX}return_url`),
     endSessionEndpoint: sessionStorage.getItem(`${SESSION_PREFIX}end_session_endpoint`),
-    revocationEndpoint: sessionStorage.getItem(`${SESSION_PREFIX}revocation_endpoint`),
     clientId: sessionStorage.getItem(`${SESSION_PREFIX}client_id`),
   };
 }
@@ -223,7 +216,6 @@ export function clearStoredOAuthData(): void {
   sessionStorage.removeItem(`${SESSION_PREFIX}state`);
   sessionStorage.removeItem(`${SESSION_PREFIX}return_url`);
   sessionStorage.removeItem(`${SESSION_PREFIX}end_session_endpoint`);
-  sessionStorage.removeItem(`${SESSION_PREFIX}revocation_endpoint`);
   sessionStorage.removeItem(`${SESSION_PREFIX}client_id`);
 }
 
@@ -245,21 +237,4 @@ export function buildEndSessionUrl(endSessionEndpoint: string, postLogoutRedirec
   });
   const sep = endSessionEndpoint.includes('?') ? '&' : '?';
   return `${endSessionEndpoint}${sep}${params.toString()}`;
-}
-
-export function revokeSessionTokens(): void {
-  const { revocationEndpoint, clientId, refreshToken, accessToken } = useAuthStore.getState();
-  const token = refreshToken || accessToken;
-  if (!revocationEndpoint || !clientId || !token) return;
-  const body = new URLSearchParams({
-    token,
-    token_type_hint: refreshToken ? 'refresh_token' : 'access_token',
-    client_id: clientId,
-  });
-  fetch(revocationEndpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-    keepalive: true,
-  }).catch(() => undefined);
 }

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.3] - 2026-10-28
+
+### Added
+
+### Changed
+- Logging out no longer revokes the OAuth tokens.
+
+### Fixed
+
 ## [2.0.2] - 2026-10-28
 
 ### Added
