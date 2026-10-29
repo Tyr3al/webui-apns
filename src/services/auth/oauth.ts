@@ -21,6 +21,7 @@ export interface DiscoveryResponse {
   scopes_supported?: string[];
   client_id_metadata_document_supported?: boolean;
   stalwart_required_scopes?: string[];
+  protected_resources?: string[];
 }
 
 export function selectScopes(
@@ -34,6 +35,23 @@ export function selectScopes(
     return required.filter((scope) => typeof scope === 'string' && scope.length > 0).join(' ');
   }
   return discovery.scopes_supported?.includes('openid') ? 'openid' : '';
+}
+
+export function selectResource(
+  apiBaseUrl: string,
+  discovery: Pick<DiscoveryResponse, 'protected_resources'>,
+): string | null {
+  let origin: string;
+  try {
+    const url = new URL(apiBaseUrl);
+    if (url.protocol !== 'https:') return null;
+    origin = url.origin;
+  } catch {
+    return null;
+  }
+  const listed = discovery.protected_resources;
+  if (Array.isArray(listed) && !listed.includes(origin)) return null;
+  return origin;
 }
 
 export async function discover(username: string): Promise<DiscoveryResponse> {
@@ -109,6 +127,7 @@ export async function exchangeCode(
   tokenEndpoint: string,
   redirectUri: string,
   clientId: string,
+  resource: string | null,
 ): Promise<TokenResponse> {
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
@@ -117,6 +136,9 @@ export async function exchangeCode(
     client_id: clientId,
     redirect_uri: redirectUri,
   });
+  if (resource) {
+    body.set('resource', resource);
+  }
 
   const response = await fetch(tokenEndpoint, {
     method: 'POST',
@@ -174,6 +196,12 @@ export async function startAuthFlow(username: string, returnUrl?: string | null)
   sessionStorage.setItem(`${SESSION_PREFIX}state`, state);
   sessionStorage.setItem(`${SESSION_PREFIX}return_url`, safeReturnUrl);
   sessionStorage.setItem(`${SESSION_PREFIX}client_id`, clientId);
+  const resource = selectResource(getApiBaseUrl(), discovery);
+  if (resource) {
+    sessionStorage.setItem(`${SESSION_PREFIX}resource`, resource);
+  } else {
+    sessionStorage.removeItem(`${SESSION_PREFIX}resource`);
+  }
   if (end_session_endpoint) {
     sessionStorage.setItem(`${SESSION_PREFIX}end_session_endpoint`, end_session_endpoint);
   } else {
@@ -195,6 +223,9 @@ export async function startAuthFlow(username: string, returnUrl?: string | null)
   if (scope) {
     params.set('scope', scope);
   }
+  if (resource) {
+    params.set('resource', resource);
+  }
 
   window.location.href = `${authorization_endpoint}?${params.toString()}`;
 }
@@ -207,6 +238,7 @@ export function getStoredOAuthData() {
     returnUrl: sessionStorage.getItem(`${SESSION_PREFIX}return_url`),
     endSessionEndpoint: sessionStorage.getItem(`${SESSION_PREFIX}end_session_endpoint`),
     clientId: sessionStorage.getItem(`${SESSION_PREFIX}client_id`),
+    resource: sessionStorage.getItem(`${SESSION_PREFIX}resource`),
   };
 }
 
@@ -217,6 +249,7 @@ export function clearStoredOAuthData(): void {
   sessionStorage.removeItem(`${SESSION_PREFIX}return_url`);
   sessionStorage.removeItem(`${SESSION_PREFIX}end_session_endpoint`);
   sessionStorage.removeItem(`${SESSION_PREFIX}client_id`);
+  sessionStorage.removeItem(`${SESSION_PREFIX}resource`);
 }
 
 export function getOAuthRedirectUri(): string {

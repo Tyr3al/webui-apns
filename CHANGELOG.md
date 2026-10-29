@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.3] - 2026-10-28
+## [2.0.3] - 2026-10-29
 
 ### Added
 
@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. This projec
 - Logging out no longer revokes the OAuth tokens.
 
 ### Fixed
+- OAuth sign-in sends the RFC 8707 `resource` parameter in the authorization request, the code exchange and token refreshes, so external identity providers that require an audience or scopes issue tokens the server accepts.
 
 ## [2.0.2] - 2026-10-28
 
