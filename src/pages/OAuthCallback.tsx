@@ -52,7 +52,7 @@ export default function OAuthCallback() {
           throw new Error(t('oauth.missingParams', 'Missing authorization code or state parameter'));
         }
 
-        const { codeVerifier, tokenEndpoint, state, returnUrl, endSessionEndpoint, clientId, revocationEndpoint } =
+        const { codeVerifier, tokenEndpoint, state, returnUrl, endSessionEndpoint, clientId, resource } =
           getStoredOAuthData();
 
         if (!state || state !== stateParam) {
@@ -64,7 +64,14 @@ export default function OAuthCallback() {
         }
 
         const redirectUri = getOAuthRedirectUri();
-        const tokenResponse = await exchangeCodeOnce(code, codeVerifier, tokenEndpoint, redirectUri, clientId);
+        const tokenResponse = await exchangeCodeOnce(
+          code,
+          codeVerifier,
+          tokenEndpoint,
+          redirectUri,
+          clientId,
+          resource,
+        );
         if (cancelled) return;
 
         useAuthStore
@@ -76,7 +83,7 @@ export default function OAuthCallback() {
             tokenEndpoint,
             endSessionEndpoint,
             clientId,
-            revocationEndpoint,
+            resource,
           );
 
         clearStoredOAuthData();

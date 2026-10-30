@@ -19,7 +19,8 @@ export const jmapKeys = {
   lists: (objectName: string) => ['jmap', objectName, 'list'] as const,
   list: (objectName: string, params: ListPageParams) => ['jmap', objectName, 'list', params] as const,
   allOptions: (objectName: string) => ['jmap', objectName, 'options'] as const,
-  options: (objectName: string, viewName: string) => ['jmap', objectName, 'options', viewName] as const,
+  options: (objectName: string, viewName: string, tenantId: string | null = null) =>
+    ['jmap', objectName, 'options', viewName, tenantId] as const,
   displayNames: (objectName: string) => ['jmap', objectName, 'displayName'] as const,
   displayName: (objectName: string, displayProperty: string, id: string) =>
     ['jmap', objectName, 'displayName', displayProperty, id] as const,

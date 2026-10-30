@@ -9,7 +9,7 @@ import { queryOptions, useQuery, useQueryClient, type QueryClient } from '@tanst
 import { jmapKeys } from '@/data/keys';
 import { loadDisplayName } from '@/data/displayNames';
 import { coerceLabel } from '@/lib/objectOptions';
-import { getDisplayProperty, resolveList, resolveObject } from '@/lib/schemaResolver';
+import { getDisplayProperty, isTenantScoped, resolveList, resolveObject, TENANT_PROPERTY } from '@/lib/schemaResolver';
 import { jmapQueryAllAndGet } from '@/services/jmap/client';
 import type { Schema } from '@/types/schema';
 
@@ -48,14 +48,20 @@ export function displayNameQuery(schema: Schema, viewOrObjectName: string, id: s
   });
 }
 
-export function objectOptionsQuery(schema: Schema, viewOrObjectName: string) {
+export function objectOptionsQuery(schema: Schema, viewOrObjectName: string, tenantId: string | null = null) {
   const objectName = parentObjectName(schema, viewOrObjectName);
   const displayProperty = getDisplayProperty(schema, viewOrObjectName);
-  const filtersStatic = resolveList(schema, viewOrObjectName, objectName)?.filtersStatic;
-  const filter = filtersStatic && Object.keys(filtersStatic).length > 0 ? filtersStatic : undefined;
+  const scopedTenantId = tenantId !== null && isTenantScoped(schema, viewOrObjectName) ? tenantId : null;
   return queryOptions({
-    queryKey: jmapKeys.options(objectName, viewOrObjectName),
+    queryKey: jmapKeys.options(objectName, viewOrObjectName, scopedTenantId),
     queryFn: async ({ signal }): Promise<ObjectOption[]> => {
+      const filtersStatic = resolveList(schema, viewOrObjectName, objectName)?.filtersStatic;
+      const filter =
+        scopedTenantId !== null
+          ? { ...filtersStatic, [TENANT_PROPERTY]: scopedTenantId }
+          : filtersStatic && Object.keys(filtersStatic).length > 0
+            ? filtersStatic
+            : undefined;
       const { list } = await jmapQueryAllAndGet(objectName, { filter }, ['id', displayProperty], { signal });
       const options: ObjectOption[] = [];
       for (const item of list) {
@@ -69,10 +75,10 @@ export function objectOptionsQuery(schema: Schema, viewOrObjectName: string) {
 
 const EMPTY_OPTIONS: ObjectOption[] = [];
 
-export function useObjectOptions(viewOrObjectName: string, schema: Schema) {
+export function useObjectOptions(viewOrObjectName: string, schema: Schema, tenantId: string | null = null) {
   const [requested, setRequested] = useState(false);
   const query = useQuery({
-    ...objectOptionsQuery(schema, viewOrObjectName),
+    ...objectOptionsQuery(schema, viewOrObjectName, tenantId),
     enabled: requested,
   });
   const { isError, refetch } = query;

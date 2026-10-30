@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useCanAccess } from '@/hooks/usePermissions';
 import { coerceLabel } from '@/lib/objectOptions';
+import { TENANT_PROPERTY } from '@/lib/schemaResolver';
 import { CreatedValuesDialog } from '@/components/forms/CreatedValuesDialog';
 import { FormProvider } from '@/components/forms/FormProvider';
 import { FormSections } from '@/components/forms/FormSections';
@@ -108,6 +109,7 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
     t('form.item', 'item')
   ).toLowerCase();
   const sch = resolved.resolvedSchema;
+  const tenantValue = state.data[TENANT_PROPERTY];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -125,6 +127,7 @@ export function DynamicForm({ viewName, objectId }: DynamicFormProps) {
         readOnly={readOnly}
         recordLabel={model.recordLabel}
         baseline={state.original}
+        tenantId={typeof tenantValue === 'string' ? tenantValue : null}
       >
         <FormSections
           sections={model.sections}

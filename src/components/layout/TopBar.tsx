@@ -26,7 +26,7 @@ import { EnterpriseUpsell } from '@/components/common/EnterpriseUpsell';
 import { DynamicIcon } from '@/components/common/DynamicIcon';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
-import { buildEndSessionUrl, getPostLogoutRedirectUri, revokeSessionTokens } from '@/services/auth/oauth';
+import { buildEndSessionUrl, getPostLogoutRedirectUri } from '@/services/auth/oauth';
 import { useEffect, useState } from 'react';
 import { useIsCommunity } from '@/hooks/usePermissions';
 import { SIDEBAR_ID } from './sidebarContext';
@@ -186,7 +186,6 @@ export function TopBar() {
                 const endSessionUrl = endSessionEndpoint
                   ? buildEndSessionUrl(endSessionEndpoint, getPostLogoutRedirectUri())
                   : null;
-                if (endSessionUrl) revokeSessionTokens();
                 logout();
                 if (endSessionUrl) {
                   window.location.href = endSessionUrl;

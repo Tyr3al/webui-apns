@@ -1,7 +1,7 @@
 {
   "name": "stalwart-webui",
   "private": true,
-  "version": "2.0.1-apns.1",
+  "version": "2.0.3-apns.1",
   "stalwart": {
     "minServerVersion": "1.0.0"
   },
