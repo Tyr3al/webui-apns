@@ -18,6 +18,7 @@ export interface FormContextValue {
   idPrefix: string;
   recordLabel: string;
   baseline: unknown;
+  tenantId: string | null;
 }
 
 export interface FieldScope {

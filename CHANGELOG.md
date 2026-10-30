@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
+## [2.0.3-apns.1] - 2026-10-30
+
+### Changed
+- Rebased onto upstream [v2.0.3](https://github.com/stalwartlabs/webui/blob/main/CHANGELOG.md) (from v2.0.1): tenant-scoped object pickers, logging out no longer revokes the OAuth tokens, and the RFC 8707 `resource` parameter is sent in OAuth requests. Still requires Stalwart v1.0.0 or later.
+
 ## [2.0.1-apns.1] - 2026-10-27
 
 ### Changed

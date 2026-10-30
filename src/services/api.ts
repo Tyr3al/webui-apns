@@ -25,9 +25,18 @@ function expireSession(): ApiError {
 }
 
 async function performRefresh(): Promise<void> {
-  const { refreshToken, tokenEndpoint, clientId } = useAuthStore.getState();
+  const { refreshToken, tokenEndpoint, clientId, resource } = useAuthStore.getState();
   if (!refreshToken || !tokenEndpoint || !clientId) {
     throw expireSession();
+  }
+
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+    client_id: clientId,
+  });
+  if (resource) {
+    body.set('resource', resource);
   }
 
   let response: Response;
@@ -35,11 +44,7 @@ async function performRefresh(): Promise<void> {
     response = await fetch(tokenEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        client_id: clientId,
-      }),
+      body,
     });
   } catch (err) {
     throw new NetworkError(err);

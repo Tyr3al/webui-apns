@@ -47,9 +47,9 @@ export function ObjectIdWidget({
   control,
 }: WidgetProps<FieldTypeObjectId>) {
   const { t } = useTranslation();
-  const { schema } = useFormContext();
+  const { schema, tenantId } = useFormContext();
   const id = typeof value === 'string' ? value : '';
-  const list = useObjectOptions(type.objectName, schema);
+  const list = useObjectOptions(type.objectName, schema, tenantId);
   const noPermissionMessage = useNoPermissionMessage(schema, type.objectName);
 
   return (
@@ -99,8 +99,8 @@ export function ObjectIdMultiSelect({
   control,
 }: ObjectIdMultiSelectProps) {
   const { t } = useTranslation();
-  const { schema } = useFormContext();
-  const list = useObjectOptions(objectName, schema);
+  const { schema, tenantId } = useFormContext();
+  const list = useObjectOptions(objectName, schema, tenantId);
   const noPermissionMessage = useNoPermissionMessage(schema, objectName);
   const available = list.options.filter((o) => !items.includes(o.id));
   const atMinimum = minItems != null && items.length <= minItems;
