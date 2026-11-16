@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
+## [2.0.6-apns.1] - 2026-11-16
+
+### Changed
+- Rebased onto upstream [v2.0.6](https://github.com/stalwartlabs/webui/blob/main/CHANGELOG.md) (from v2.0.3), picking up the schema-driven dashboard redesign, passkey registration, locale-aware date and number formatting and the OAuth fixes from upstream v2.0.4–v2.0.6. The fork's XAPS push-device pages, settings form and menu entries are carried over unchanged.
+
 ## [2.0.6] - 2026-11-13
 
 ### Fixed
