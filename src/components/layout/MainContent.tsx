@@ -122,7 +122,7 @@ function renderView(
       return <XapsMyDevicesView />;
     }
     return (
-      <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+      <div className="mt-3 rounded-2xl bg-muted p-10 text-center text-muted-foreground">
         {t('errors.unknownComponent', 'Unknown component: {{name}}', { name: componentName })}
       </div>
     );
@@ -135,7 +135,7 @@ function renderView(
   const resolved = resolveObject(schema, viewName);
   if (!resolved) {
     return (
-      <div role="alert" className="flex items-center justify-center p-8 text-destructive">
+      <div role="alert" className="mt-3 rounded-xl bg-destructive-soft p-4 text-center text-sm text-destructive">
         {t('errors.unknownView', 'Unknown view: {{name}}', { name: viewName })}
       </div>
     );

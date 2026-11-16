@@ -13,36 +13,44 @@ import { formatElapsed } from '@/lib/format';
 import { phaseLabel, stageBody } from '../stageText';
 import { stageSeverity, type DeliveryStage, type MX, type ReportUri, type StageSeverity } from '../types';
 
+const SEVERITY_BADGE: Record<StageSeverity, string> = {
+  pending: 'bg-info-soft text-info',
+  ok: 'bg-success-soft text-success',
+  warn: 'bg-warning-soft text-warning',
+  error: 'bg-destructive-soft text-destructive',
+};
+
 function SeverityIcon({ severity }: { severity: StageSeverity }) {
   const { t } = useTranslation();
+  const badge = cn('grid size-6 place-items-center rounded-full', SEVERITY_BADGE[severity]);
   switch (severity) {
     case 'pending':
       return (
-        <Loader2
-          role="img"
-          aria-label={t('deliveryTrace.severity.pending', 'In progress')}
-          className="h-4 w-4 animate-spin text-muted-foreground"
-        />
+        <span className={badge}>
+          <Loader2
+            role="img"
+            aria-label={t('deliveryTrace.severity.pending', 'In progress')}
+            className="size-3.5 animate-spin"
+          />
+        </span>
       );
     case 'ok':
       return (
-        <CircleCheck
-          role="img"
-          aria-label={t('deliveryTrace.severity.ok', 'Succeeded')}
-          className="h-4 w-4 text-emerald-500"
-        />
+        <span className={badge}>
+          <CircleCheck role="img" aria-label={t('deliveryTrace.severity.ok', 'Succeeded')} className="size-3.5" />
+        </span>
       );
     case 'warn':
       return (
-        <TriangleAlert
-          role="img"
-          aria-label={t('deliveryTrace.severity.warn', 'Warning')}
-          className="h-4 w-4 text-amber-500"
-        />
+        <span className={badge}>
+          <TriangleAlert role="img" aria-label={t('deliveryTrace.severity.warn', 'Warning')} className="size-3.5" />
+        </span>
       );
     case 'error':
       return (
-        <CircleX role="img" aria-label={t('deliveryTrace.severity.error', 'Failed')} className="h-4 w-4 text-red-500" />
+        <span className={badge}>
+          <CircleX role="img" aria-label={t('deliveryTrace.severity.error', 'Failed')} className="size-3.5" />
+        </span>
       );
   }
 }
@@ -52,11 +60,11 @@ function MxTable({ mxs }: { mxs: MX[] }) {
     .sort((a, b) => a.preference - b.preference)
     .flatMap((mx) => mx.exchanges.map((exchange) => ({ preference: mx.preference, exchange })));
   return (
-    <div className="mt-1 rounded border text-xs">
+    <div className="mt-1.5 divide-y divide-border rounded-xl bg-muted px-1 py-0.5 text-xs">
       {rows.map(({ preference, exchange }) => (
-        <div key={`${preference}-${exchange}`} className="flex gap-3 border-b px-3 py-1 last:border-b-0">
-          <span className="w-8 text-right text-muted-foreground">{preference}</span>
-          <span>{exchange}</span>
+        <div key={`${preference}-${exchange}`} className="flex gap-3 px-3 py-1.5">
+          <span className="w-8 text-right tabular-nums text-muted-foreground">{preference}</span>
+          <span className="font-mono">{exchange}</span>
         </div>
       ))}
     </div>
@@ -65,14 +73,14 @@ function MxTable({ mxs }: { mxs: MX[] }) {
 
 function ReportUris({ rua }: { rua: ReportUri[] }) {
   return (
-    <ul className="mt-1 space-y-1">
+    <ul className="mt-1.5 space-y-1 rounded-xl bg-muted p-3">
       {rua.map((uri) => {
         const value = uri.type === 'mail' ? uri.email : uri.url;
         const Icon = uri.type === 'mail' ? Mail : Globe;
         return (
           <li key={`${uri.type}:${value}`} className="flex items-center gap-2 text-xs">
-            <Icon aria-hidden="true" className="h-3 w-3 text-muted-foreground" />
-            <span>{value}</span>
+            <Icon aria-hidden="true" className="size-3 text-muted-foreground" />
+            <span className="break-all font-mono">{value}</span>
           </li>
         );
       })}
@@ -82,14 +90,14 @@ function ReportUris({ rua }: { rua: ReportUri[] }) {
 
 function OpaqueObject({ data }: { data: Record<string, unknown> }) {
   return (
-    <div className="mt-1 rounded border bg-muted/30 p-2">
+    <div className="mt-1.5 rounded-xl bg-muted p-3">
       <dl className="space-y-1 text-xs">
         {Object.entries(data).map(([k, v]) => (
           <div key={k} className="flex gap-2">
             <dt className="min-w-24 font-medium text-muted-foreground">{k}</dt>
             <dd className="break-all">
               {typeof v === 'object' && v !== null ? (
-                <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(v, null, 2)}</pre>
+                <pre className="whitespace-pre-wrap font-mono text-xs">{JSON.stringify(v, null, 2)}</pre>
               ) : (
                 String(v)
               )}
@@ -133,20 +141,20 @@ export function StageRow({ stage }: { stage: DeliveryStage }) {
 
   const content = (
     <div className="flex items-start gap-3 py-2">
-      <div className="mt-0.5 shrink-0">
+      <div className="shrink-0">
         <SeverityIcon severity={severity} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex min-h-6 flex-wrap items-center gap-2">
           <span className="text-sm font-medium">{phaseLabel(t, stage)}</span>
           {elapsed !== null && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs tabular-nums">
               {formatElapsed(elapsed)}
             </Badge>
           )}
         </div>
         {body && (
-          <p className={cn('mt-0.5 text-xs', severity === 'error' ? 'text-red-500' : 'text-muted-foreground')}>
+          <p className={cn('mt-0.5 text-xs', severity === 'error' ? 'text-destructive' : 'text-muted-foreground')}>
             {body}
           </p>
         )}
@@ -162,13 +170,13 @@ export function StageRow({ stage }: { stage: DeliveryStage }) {
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="group ml-7 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="group ml-9 flex items-center gap-1 rounded-full text-xs font-medium text-brand-text hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ChevronRight aria-hidden="true" className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
+          <ChevronRight aria-hidden="true" className="size-3 transition-transform group-data-[state=open]:rotate-90" />
           {t('deliveryTrace.viewDetails', 'View details')}
         </button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="ml-7">
+      <CollapsibleContent className="ml-9">
         <StageDetails stage={stage} />
       </CollapsibleContent>
     </Collapsible>

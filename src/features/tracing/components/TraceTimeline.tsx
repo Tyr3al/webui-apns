@@ -39,7 +39,7 @@ export function TraceTimeline({ events, anchorTimestamp, keyOffset = 0 }: TraceT
 
   if (events.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8 text-muted-foreground">
+      <div className="rounded-xl bg-muted p-10 text-center text-muted-foreground">
         {t('tracing.noEvents', 'No trace events to display.')}
       </div>
     );
@@ -50,7 +50,7 @@ export function TraceTimeline({ events, anchorTimestamp, keyOffset = 0 }: TraceT
   return (
     <div className="relative">
       <div ref={containerRef} onScroll={handleScroll} className="max-h-[70vh] overflow-y-auto scroll-smooth">
-        <ol className="space-y-4 p-2">
+        <ol className="space-y-1 pb-6">
           {events.map((event, idx) => (
             <TraceEventItem key={keyOffset + idx} event={event} anchorMs={anchorMs} />
           ))}
@@ -64,11 +64,23 @@ export function TraceTimeline({ events, anchorTimestamp, keyOffset = 0 }: TraceT
 function TraceEventIcon({ eventType }: { eventType: string }) {
   switch (traceEventKind(eventType)) {
     case 'error':
-      return <CircleX aria-hidden="true" className="h-4 w-4 text-red-500" />;
+      return (
+        <span className="grid size-7 place-items-center rounded-full bg-destructive-soft text-destructive">
+          <CircleX aria-hidden="true" className="size-3.5" />
+        </span>
+      );
     case 'span':
-      return <Clock aria-hidden="true" className="h-4 w-4 text-muted-foreground" />;
+      return (
+        <span className="grid size-7 place-items-center rounded-full bg-highlight text-highlight-foreground">
+          <Clock aria-hidden="true" className="size-3.5" />
+        </span>
+      );
     default:
-      return <CircleDot aria-hidden="true" className="h-4 w-4 text-muted-foreground" />;
+      return (
+        <span className="grid size-7 place-items-center rounded-full bg-muted text-muted-foreground">
+          <CircleDot aria-hidden="true" className="size-3.5" />
+        </span>
+      );
   }
 }
 
@@ -78,29 +90,29 @@ function TraceEventItem({ event, anchorMs }: { event: TraceEvent; anchorMs: numb
   const offset = new Date(event.timestamp).getTime() - anchorMs;
 
   return (
-    <li className="flex gap-3">
-      <div className="mt-1 shrink-0">
+    <li className="flex gap-3 rounded-xl px-2 py-2.5">
+      <div className="shrink-0">
         <TraceEventIcon eventType={event.event} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <div>
+        <div className="flex min-h-7 items-start justify-between gap-2">
+          <div className="min-w-0 pt-1">
             {known ? (
               <span className="text-sm font-semibold">{label}</span>
             ) : (
-              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">{label}</span>
+              <span className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px]">{label}</span>
             )}
             {explanation && <p className="mt-0.5 text-xs text-muted-foreground">{explanation}</p>}
           </div>
-          <div className="shrink-0 text-right text-xs">
+          <div className="shrink-0 pt-1 text-right text-xs tabular-nums">
             <time dateTime={event.timestamp} className="block text-muted-foreground">
-              {formatTime(event.timestamp, { milliseconds: true })}
+              {formatTime(event.timestamp, { seconds: true, milliseconds: /\.\d/.test(event.timestamp) })}
             </time>
-            <div className="text-muted-foreground/60">(+{formatElapsed(offset)})</div>
+            <div className="text-dim">(+{formatElapsed(offset)})</div>
           </div>
         </div>
         {event.keyValues.length > 0 && (
-          <div className="mt-2 space-y-1">
+          <div className="mt-2 space-y-1 rounded-xl bg-muted p-3">
             <TraceKeyValueList keyValues={event.keyValues} />
           </div>
         )}

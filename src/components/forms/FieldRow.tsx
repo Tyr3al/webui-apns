@@ -44,16 +44,16 @@ interface FieldLabelProps {
 export function FieldLabel({ id, htmlFor, label, marker, locked }: FieldLabelProps) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-2">
-      <Label id={id} htmlFor={htmlFor} className="text-sm font-medium">
+    <div className="flex items-center gap-1.5">
+      <Label id={id} htmlFor={htmlFor} className="text-[13.5px] font-semibold leading-snug">
         {label}
         {marker === 'required' && (
-          <span className="ml-0.5 text-destructive" aria-hidden="true">
+          <span className="ml-1 text-brand-text" aria-hidden="true">
             *
           </span>
         )}
         {marker === 'optional' && (
-          <span className="ml-1.5 text-xs font-normal text-muted-foreground">{t('field.optional', '(optional)')}</span>
+          <span className="ml-1.5 text-xs font-normal text-dim">{t('field.optional', '(optional)')}</span>
         )}
       </Label>
       {locked && (
@@ -70,7 +70,7 @@ export function FieldLabel({ id, htmlFor, label, marker, locked }: FieldLabelPro
 export function FieldError({ id, error }: { id: string; error?: string }) {
   if (!error) return null;
   return (
-    <p id={id} className="text-xs text-destructive">
+    <p id={id} className="text-xs font-medium text-destructive">
       {error}
     </p>
   );
@@ -132,32 +132,49 @@ export function FieldRow({ field, formField, value, onChange, error, readOnly: f
 
   if (traits.labelMode === 'none') {
     return (
-      <div className="space-y-1.5">
+      <div data-slot="field-row" className="space-y-1.5 py-4">
         {body}
         <FieldError id={ids.errorId} error={error} />
       </div>
     );
   }
 
+  const layout = asValue && traits.layout === 'inline' ? 'side' : traits.layout;
   return (
-    <div className="space-y-1.5">
-      <FieldLabel
-        id={ids.labelId}
-        htmlFor={traits.labelMode === 'control' && !asValue ? ids.inputId : undefined}
-        label={formField.label}
-        marker={marker}
-        locked={locked}
-      />
-      {field.description && (
-        <div id={ids.descriptionId}>
-          <Markdown source={field.description} className="text-xs text-muted-foreground" />
+    <div
+      data-slot="field-row"
+      className={cn(
+        'py-4',
+        layout === 'side' ? 'field-grid' : 'grid gap-x-8 gap-y-2',
+        layout === 'inline' && 'grid-cols-[minmax(0,1fr)_auto]',
+      )}
+    >
+      <div className={cn('min-w-0 space-y-1', layout === 'side' && '@xl:pt-2')}>
+        <FieldLabel
+          id={ids.labelId}
+          htmlFor={traits.labelMode === 'control' && !asValue ? ids.inputId : undefined}
+          label={formField.label}
+          marker={marker}
+          locked={locked}
+        />
+        {field.description && (
+          <div id={ids.descriptionId}>
+            <Markdown source={field.description} className="text-[12.5px] leading-relaxed text-muted-foreground" />
+          </div>
+        )}
+      </div>
+      <div className={cn('min-w-0 space-y-1.5', layout === 'inline' && 'pt-0.5', asValue && '@xl:pt-2')}>
+        <div className={cn(locked && 'opacity-60')}>{body}</div>
+        {ft.type === 'string' && ft.format === 'sieve' && (
+          <SievepadButton scriptName={ctx.recordLabel} source={typeof value === 'string' ? value : ''} />
+        )}
+        {layout !== 'inline' && <FieldError id={ids.errorId} error={error} />}
+      </div>
+      {layout === 'inline' && error && (
+        <div className="col-span-full">
+          <FieldError id={ids.errorId} error={error} />
         </div>
       )}
-      <div className={cn(locked && 'opacity-60')}>{body}</div>
-      {ft.type === 'string' && ft.format === 'sieve' && (
-        <SievepadButton scriptName={ctx.recordLabel} source={typeof value === 'string' ? value : ''} />
-      )}
-      <FieldError id={ids.errorId} error={error} />
     </div>
   );
 }

@@ -8,10 +8,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FieldRow } from '@/components/forms/FieldRow';
 import { VariantSelect } from '@/components/forms/VariantSelect';
-import { useFormContext } from '@/components/forms/formContext';
+import { PanelContext, useFormContext, useInPanel } from '@/components/forms/formContext';
 import { buildEmbeddedDefaults } from '@/lib/schemaResolver';
 import { embeddedEntries, isRecord, resolveEmbedded, switchVariantValues } from '@/lib/embeddedSchema';
 import type { ControlProps, WidgetProps } from '@/components/forms/widgets/types';
+import { cn } from '@/lib/utils';
 import type { FieldTypeObject } from '@/types/schema';
 
 interface EmbeddedObjectEditorProps {
@@ -20,11 +21,20 @@ interface EmbeddedObjectEditorProps {
   value: unknown;
   onChange: (value: unknown) => void;
   readOnly: boolean;
+  bare?: boolean;
 }
 
-function EmbeddedObjectEditor({ objectName, control, value, onChange, readOnly }: EmbeddedObjectEditorProps) {
+export function EmbeddedObjectEditor({
+  objectName,
+  control,
+  value,
+  onChange,
+  readOnly,
+  bare = false,
+}: EmbeddedObjectEditorProps) {
   const { t } = useTranslation();
   const { schema, mode, baseline } = useFormContext();
+  const inPanel = useInPanel();
   const [initial, setInitial] = useState({ baseline, value });
   if (initial.baseline !== baseline) setInitial({ baseline, value });
   const resolved = resolveEmbedded(schema, objectName, value);
@@ -46,28 +56,46 @@ function EmbeddedObjectEditor({ objectName, control, value, onChange, readOnly }
   };
   const entries = embeddedEntries(resolved).filter(({ field }) => field.update !== 'serverSet');
 
+  if (!resolved.variants && entries.length === 0) return null;
+
+  const frame = bare ? 'bare' : inPanel ? 'rule' : 'panel';
   return (
-    <div className="space-y-4 rounded-md border p-4">
-      {resolved.variants && (
-        <VariantSelect
-          labelledBy={control?.['aria-labelledby']}
-          ariaLabel={control?.['aria-label']}
-          variants={resolved.variants}
-          value={resolved.variant?.name ?? ''}
-          onChange={changeVariant}
-          readOnly={readOnly}
-        />
-      )}
-      {entries.map(({ formField, field }) => (
-        <FieldRow
-          key={formField.name}
-          field={field}
-          formField={formField}
-          value={obj[formField.name]}
-          onChange={(v) => onChange({ ...obj, [formField.name]: v })}
-        />
-      ))}
-    </div>
+    <PanelContext value={true}>
+      <div
+        data-slot="embedded-object"
+        className={cn(
+          '@container',
+          frame === 'panel' && 'rounded-xl bg-muted px-4',
+          frame === 'rule' && 'border-l-2 border-input pl-4',
+        )}
+      >
+        {resolved.variants && (
+          <div className={cn(frame === 'panel' ? 'py-3' : 'py-2', entries.length > 0 && 'border-b border-border')}>
+            <VariantSelect
+              labelledBy={control?.['aria-labelledby']}
+              ariaLabel={control?.['aria-label']}
+              variants={resolved.variants}
+              value={resolved.variant?.name ?? ''}
+              onChange={changeVariant}
+              readOnly={readOnly}
+            />
+          </div>
+        )}
+        {entries.length > 0 && (
+          <div className={cn('divide-y divide-border', frame === 'rule' && '[&>[data-slot=field-row]]:py-3')}>
+            {entries.map(({ formField, field }) => (
+              <FieldRow
+                key={formField.name}
+                field={field}
+                formField={formField}
+                value={obj[formField.name]}
+                onChange={(v) => onChange({ ...obj, [formField.name]: v })}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </PanelContext>
   );
 }
 

@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 import { useAuthStore } from '@/stores/authStore';
@@ -114,13 +115,13 @@ export default function OAuthCallback() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-sm space-y-4 text-center">
-          <p className="text-sm text-destructive" role="alert">
+        <div className="tile w-full max-w-sm space-y-5 px-7 py-8 text-center">
+          <p className="rounded-xl bg-destructive-soft px-4 py-3 text-sm text-destructive" role="alert">
             {error}
           </p>
-          <a href={`${getBasePath()}/login`} className="text-sm text-primary underline-offset-4 hover:underline">
-            {t('oauth.backToLogin', 'Back to login')}
-          </a>
+          <Button asChild variant="secondary">
+            <a href={`${getBasePath()}/login`}>{t('oauth.backToLogin', 'Back to login')}</a>
+          </Button>
         </div>
       </div>
     );
@@ -128,8 +129,8 @@ export default function OAuthCallback() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex flex-col items-center gap-3" role="status">
+        <Loader2 className="h-7 w-7 animate-spin text-brand-text" aria-hidden="true" />
         <p className="text-sm text-muted-foreground">{t('oauth.processing', 'Completing sign in...')}</p>
       </div>
     </div>

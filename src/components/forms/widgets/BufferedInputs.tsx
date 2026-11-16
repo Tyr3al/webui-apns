@@ -40,6 +40,7 @@ export function BufferedInput({ value, onCommit, onBlur, onKeyDown, ...rest }: B
 }
 
 interface BufferedTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'value'> {
+  variant?: 'field' | 'bare';
   value: string;
   onCommit: (v: string) => void;
 }

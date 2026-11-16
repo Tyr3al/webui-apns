@@ -31,7 +31,7 @@ export function HelpTooltip({ content, label, side = 'top', icon: Icon = HelpCir
           type="button"
           aria-label={ariaLabel}
           className={cn(
-            'inline-flex shrink-0 cursor-help items-center rounded-sm text-muted-foreground/60 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+            'inline-flex shrink-0 cursor-help items-center rounded-full text-dim transition-colors hover:text-brand-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             className,
           )}
           onClick={(e) => e.preventDefault()}

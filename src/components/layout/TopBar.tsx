@@ -63,7 +63,7 @@ export function TopBar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 bg-background/80 px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-5">
       <Button
         variant="ghost"
         size="icon"
@@ -78,7 +78,7 @@ export function TopBar() {
 
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link to="/" className="flex shrink-0 items-center">
+          <Link to="/" className="flex shrink-0 items-center md:w-[228px]">
             <Logo />
           </Link>
         </TooltipTrigger>
@@ -87,24 +87,24 @@ export function TopBar() {
         </TooltipContent>
       </Tooltip>
 
-      <div className="hidden min-w-0 flex-1 items-center justify-center px-4 md:flex">
+      <div className="hidden min-w-0 flex-1 items-center md:flex">
         <button
           type="button"
           onClick={() => setPaletteOpen(true)}
-          className="flex h-9 w-full max-w-md items-center gap-2 rounded-md border border-input bg-transparent px-3 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent"
+          className="flex h-10 w-full max-w-md items-center gap-2.5 rounded-full bg-card pl-4 pr-2 text-sm text-dim shadow-tile transition-shadow duration-200 hover:shadow-lift"
         >
           <Search aria-hidden="true" className="h-4 w-4" />
           <span className="flex-1 text-left">{t('globalSearch.placeholder', 'Search pages, fields, settings...')}</span>
           <kbd
             aria-hidden="true"
-            className="pointer-events-none flex h-5 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium"
+            className="pointer-events-none flex h-6 select-none items-center rounded-full bg-muted px-2.5 font-mono text-[11px] font-medium text-muted-foreground"
           >
             {IS_MAC ? '⌘K' : 'Ctrl K'}
           </kbd>
         </button>
       </div>
 
-      <div className="ml-auto flex items-center gap-2 md:ml-0">
+      <div className="ml-auto flex items-center gap-1.5">
         {isCommunity && <EnterpriseUpsell open={upsellOpen} onClose={() => setUpsellOpen(false)} />}
 
         <Button
@@ -129,7 +129,7 @@ export function TopBar() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={t('userMenu', 'User menu')}>
+            <Button variant="outline" size="icon-lg" aria-label={t('userMenu', 'User menu')}>
               <User aria-hidden="true" className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

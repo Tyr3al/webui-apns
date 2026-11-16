@@ -6,10 +6,10 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Zap } from 'lucide-react';
+import { ArrowLeft, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FieldRow } from '@/components/forms/FieldRow';
+import { FormSectionCard } from '@/components/forms/FormSections';
 import { FormProvider } from '@/components/forms/FormProvider';
 import { resolveVariantForm } from '@/lib/schemaResolver';
 import type { ObjectVariant, Schema } from '@/types/schema';
@@ -55,56 +55,54 @@ export function ActionForm({ schema, variant, initialData, onSubmit, onBack }: A
 
   return (
     <form
-      className="space-y-6"
+      className="mx-auto max-w-5xl space-y-3.5"
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit();
       }}
     >
-      <div className="flex items-center gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={onBack}>
-          {t('common.back', 'Back')}
+      <div className="flex items-start gap-3.5 px-1 pb-1 pt-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-lg"
+          className="shrink-0"
+          onClick={onBack}
+          aria-label={t('common.back', 'Back')}
+        >
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         </Button>
-        <h1 className="text-xl font-semibold">{variant.label}</h1>
+        <h1 className="page-title min-w-0 flex-1 break-words pt-1">{variant.label}</h1>
       </div>
 
       <FormProvider schema={schema} mode="create">
         {sections.map((section) => (
-          <Card key={section.fields.map((f) => f.name).join('|')}>
-            {section.title && (
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">{section.title}</CardTitle>
-              </CardHeader>
-            )}
-            <CardContent className={section.title ? 'pt-0' : undefined}>
-              <div className="space-y-4">
-                {section.fields.map((ff) => {
-                  const def = fields.properties[ff.name];
-                  if (!def) return null;
-                  return (
-                    <FieldRow
-                      key={ff.name}
-                      formField={ff}
-                      field={def}
-                      value={formData[ff.name]}
-                      onChange={(v) => handleChange(ff.name, v)}
-                      error={errors[ff.name]}
-                    />
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <FormSectionCard key={section.fields.map((f) => f.name).join('|')} title={section.title}>
+            {section.fields.map((ff) => {
+              const def = fields.properties[ff.name];
+              if (!def) return null;
+              return (
+                <FieldRow
+                  key={ff.name}
+                  formField={ff}
+                  field={def}
+                  value={formData[ff.name]}
+                  onChange={(v) => handleChange(ff.name, v)}
+                  error={errors[ff.name]}
+                />
+              );
+            })}
+          </FormSectionCard>
         ))}
       </FormProvider>
 
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 pt-1">
         <Button type="button" variant="outline" onClick={onBack}>
           {t('common.cancel', 'Cancel')}
         </Button>
         <Button type="submit">
-          <Zap aria-hidden="true" className="mr-2 h-4 w-4" />
+          <Zap aria-hidden="true" />
           {t('actions.execute', 'Execute')}
         </Button>
       </div>

@@ -24,20 +24,30 @@ function StreamIndicator({ status }: { status: StreamStatus }) {
   const { t } = useTranslation();
   if (status.kind === 'open') {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span aria-hidden="true" className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+      <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-soft px-2.5 text-xs font-semibold text-success">
+        <span aria-hidden="true" className="relative flex size-1.5">
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-75" />
+          <span className="relative inline-flex size-1.5 rounded-full bg-current" />
         </span>
         {t('tracing.streamingEvents', 'Streaming events...')}
-      </div>
+      </span>
     );
   }
   if (status.kind === 'reconnecting' || status.kind === 'connecting') {
-    return <span className="text-sm text-muted-foreground">{t('tracing.reconnecting', 'Reconnecting...')}</span>;
+    return (
+      <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-warning-soft px-2.5 text-xs font-semibold text-warning">
+        <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-current" />
+        {t('tracing.reconnecting', 'Reconnecting...')}
+      </span>
+    );
   }
   if (status.kind === 'closed') {
-    return <span className="text-sm text-muted-foreground">{t('tracing.stopped', 'Stopped')}</span>;
+    return (
+      <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-muted px-2.5 text-xs font-semibold text-muted-foreground">
+        <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+        {t('tracing.stopped', 'Stopped')}
+      </span>
+    );
   }
   return null;
 }
@@ -48,38 +58,35 @@ export function LiveTracingSession({ status, buffer, error, onStop, onRestart }:
   const count = buffer.events.length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold">{t('tracing.liveTitle', 'Live Tracing')}</h1>
+    <div className="space-y-3.5">
+      <div className="flex flex-wrap items-end justify-between gap-4 px-1 pb-1 pt-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="page-title">{t('tracing.liveTitle', 'Live Tracing')}</h1>
           <div role="status">
             <StreamIndicator status={status} />
           </div>
         </div>
         {active ? (
           <Button variant="outline" onClick={onStop}>
-            <Square aria-hidden="true" className="mr-2 h-4 w-4" />
+            <Square aria-hidden="true" />
             {t('tracing.stopTracing', 'Stop tracing')}
           </Button>
         ) : (
           <Button variant="outline" onClick={onRestart}>
-            <RotateCcw aria-hidden="true" className="mr-2 h-4 w-4" />
+            <RotateCcw aria-hidden="true" />
             {t('tracing.restart', 'Restart')}
           </Button>
         )}
       </div>
 
       {error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-        >
+        <div role="alert" className="rounded-xl bg-destructive-soft p-4 text-sm text-destructive">
           {error}
         </div>
       )}
 
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-5">
           <TraceTimeline
             events={buffer.events}
             anchorTimestamp={buffer.anchorTimestamp ?? undefined}
@@ -88,7 +95,7 @@ export function LiveTracingSession({ status, buffer, error, onStop, onRestart }:
         </CardContent>
       </Card>
 
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="text-center text-xs text-dim">
         {t('tracing.eventCount', '{{count}} events', { count })}
         {count >= MAX_LIVE_EVENTS && ' ' + t('tracing.bufferFull', '(buffer full)')}
       </p>

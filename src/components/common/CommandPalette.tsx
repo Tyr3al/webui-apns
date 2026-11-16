@@ -50,7 +50,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         <Command
           shouldFilter={false}
           loop
-          className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
+          className="[&_[cmdk-group-heading]]:px-2.5 [&_[cmdk-group-heading]]:pt-2.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-dim [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-14 [&_[cmdk-item]]:gap-3 [&_[cmdk-item]]:rounded-xl [&_[cmdk-item]]:px-2.5 [&_[cmdk-item]]:py-2 [&_[cmdk-item][data-selected=true]]:bg-muted [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4 [&_[cmdk-list]]:max-h-[min(60vh,420px)] [&_[cmdk-list]]:pb-2"
         >
           <CommandInput
             placeholder={t('globalSearch.placeholder', 'Search pages, fields, settings...')}
@@ -59,7 +59,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             trailing={
               <kbd
                 aria-hidden="true"
-                className="pointer-events-none ml-2 inline-flex h-5 shrink-0 select-none items-center rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground"
+                className="pointer-events-none ml-2 inline-flex h-5 shrink-0 select-none items-center rounded-md bg-muted px-1.5 font-mono text-[10px] font-medium text-dim"
               >
                 ESC
               </kbd>
@@ -79,12 +79,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
                   return (
                     <CommandItem key={itemValue} value={itemValue} onSelect={() => selectEntry(entry)}>
-                      <ActionIcon aria-hidden="true" className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <span className="grid size-8 shrink-0 place-items-center rounded-[10px] bg-highlight text-highlight-foreground">
+                        <ActionIcon aria-hidden="true" className="h-4 w-4" />
+                      </span>
                       <div className="flex flex-1 flex-col overflow-hidden">
                         <span className="truncate font-medium">{friendlyName(entry.text)}</span>
-                        <span className="truncate text-xs text-muted-foreground">{entry.breadcrumb}</span>
+                        <span className="truncate text-xs text-dim">{entry.breadcrumb}</span>
                       </div>
-                      <span className="ml-auto shrink-0 pl-2 text-xs text-muted-foreground">{actionLabel}</span>
+                      <span className="ml-auto shrink-0 pl-2 text-xs font-medium text-dim">{actionLabel}</span>
                     </CommandItem>
                   );
                 })}

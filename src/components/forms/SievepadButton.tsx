@@ -48,8 +48,8 @@ export function SievepadButton({ scriptName, source }: SievepadButtonProps) {
   return (
     <>
       <div className="flex justify-end">
-        <Button type="button" variant="outline" size="sm" onClick={handleClick} disabled={!source.trim()}>
-          <Bug className="h-4 w-4" />
+        <Button type="button" variant="secondary" size="sm" onClick={handleClick} disabled={!source.trim()}>
+          <Bug aria-hidden="true" />
           {t('sievepad.debug', 'Debug')}
         </Button>
       </div>
@@ -64,7 +64,7 @@ export function SievepadButton({ scriptName, source }: SievepadButtonProps) {
         confirmLabel={t('common.continue')}
         onConfirm={handleContinue}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-3">
           <Checkbox
             id="sievepad-dont-show-again"
             checked={dontShowAgain}

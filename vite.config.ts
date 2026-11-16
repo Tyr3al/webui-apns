@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
-import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
-import pkg from './package.json' with { type: 'json' }
+import { defineConfig } from 'vite';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
+import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
   base: './',
@@ -26,11 +26,12 @@ export default defineConfig({
             version: pkg.version,
             minServerVersion: pkg.stalwart.minServerVersion,
           }),
-        })
+        });
       },
     },
   ],
   build: {
+    assetsInlineLimit: (file) => (file.endsWith('.woff2') ? false : undefined),
     rolldownOptions: {
       output: {
         codeSplitting: {
@@ -46,4 +47,4 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
-})
+});

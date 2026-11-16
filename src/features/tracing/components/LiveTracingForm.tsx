@@ -39,14 +39,16 @@ export function LiveTracingForm({
   const [addingFilter, setAddingFilter] = useState(false);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 pt-8">
-      <div>
-        <h1 className="text-2xl font-bold">{t('tracing.liveTitle', 'Live Tracing')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('tracing.liveSubtitle', 'Stream server events in real time.')}</p>
+    <div className="mx-auto max-w-2xl space-y-3.5 pt-6">
+      <div className="space-y-1 px-1 pb-1 pt-3">
+        <h1 className="page-title">{t('tracing.liveTitle', 'Live Tracing')}</h1>
+        <p className="text-sm text-muted-foreground">
+          {t('tracing.liveSubtitle', 'Stream server events in real time.')}
+        </p>
       </div>
 
       <Card>
-        <CardContent className="space-y-4 p-4">
+        <CardContent className="space-y-4 p-5">
           <div className="space-y-2">
             <Label htmlFor={keywordsId}>{t('tracing.keywordsLabel', 'Keywords (optional)')}</Label>
             <Input
@@ -64,12 +66,12 @@ export function LiveTracingForm({
             <ul className="flex flex-wrap gap-2" aria-label={t('tracing.activeFilters', 'Active filters')}>
               {filters.map((f) => (
                 <li key={f.key}>
-                  <Badge variant="secondary" className="gap-1">
+                  <Badge className="h-7 gap-1 pl-3 pr-1.5 text-[12.5px] font-medium">
                     {f.label} = {f.value}
                     <button
                       type="button"
                       onClick={() => onFiltersChange(filters.filter((other) => other.key !== f.key))}
-                      className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      className="ml-0.5 grid size-5 place-items-center rounded-full hover:bg-card hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={t('tracing.removeFilter', 'Remove filter {{label}}', { label: f.label })}
                     >
                       <X aria-hidden="true" className="h-3 w-3" />
@@ -90,17 +92,13 @@ export function LiveTracingForm({
             />
           ) : (
             <Button variant="outline" size="sm" onClick={() => setAddingFilter(true)}>
-              <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
+              <Plus aria-hidden="true" />
               {t('tracing.addFilter', 'Add filter')}
             </Button>
           )}
 
           <Button className="w-full" onClick={onStart} disabled={starting}>
-            {starting ? (
-              <Loader2 aria-hidden="true" className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Play aria-hidden="true" className="mr-2 h-4 w-4" />
-            )}
+            {starting ? <Loader2 aria-hidden="true" className="animate-spin" /> : <Play aria-hidden="true" />}
             {starting ? t('tracing.connecting', 'Connecting...') : t('tracing.startTracing', 'Start tracing')}
           </Button>
         </CardContent>
@@ -124,7 +122,7 @@ function FilterEditor({ onAdd, onCancel }: { onAdd: (filter: KeyValueFilter) => 
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 rounded-xl bg-muted p-2">
       <Select value={key} onValueChange={setKey}>
         <SelectTrigger className="w-48" aria-label={t('tracing.filterKey', 'Filter key')}>
           <SelectValue placeholder={t('field.selectKey', 'Select key...')} />

@@ -10,20 +10,57 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSchemaStore } from '@/stores/schemaStore';
-import type { Dashboard } from '../types/schema';
+import type { Dashboard, DashboardItem } from '../types/schema';
 import type { Metric } from '../types/metrics';
 import { useDashboardStore } from '../stores/dashboardStore';
 import { useLiveMetricsStore } from '../stores/liveMetricsStore';
 import { useClusterNodes, useHistoryMetrics } from '../queries';
 import { useCanAccess } from '@/hooks/usePermissions';
 import { errorMessage } from '@/lib/jmapErrors';
-import { collectHistoryMetricIds, collectLiveMetricIds, distinctNodeIds, nodeOptions, periodWindow } from '../helpers';
+import {
+  collectHistoryMetricIds,
+  collectLiveMetricIds,
+  dashboardItems,
+  distinctNodeIds,
+  nodeOptions,
+  periodWindow,
+} from '../helpers';
 import { StatCard } from './StatCard';
 import { DashboardChart } from './DashboardChart';
 import { PeriodSelector } from './PeriodSelector';
 import { NodeSelector } from './NodeSelector';
+import { HeadlineTile } from './HeadlineTile';
+import { RankingTile } from './RankingTile';
+import { cn } from '@/lib/utils';
 
 const EMPTY_METRICS: Metric[] = [];
+const EMPTY_ITEMS: DashboardItem[] = [];
+
+const SPAN_CLASSES = [
+  'col-span-12 md:col-span-6 xl:col-span-1',
+  'col-span-12 md:col-span-6 xl:col-span-2',
+  'col-span-12 md:col-span-6 xl:col-span-3',
+  'col-span-12 md:col-span-6 xl:col-span-4',
+  'col-span-12 xl:col-span-5',
+  'col-span-12 xl:col-span-6',
+  'col-span-12 xl:col-span-7',
+  'col-span-12 xl:col-span-8',
+  'col-span-12 xl:col-span-9',
+  'col-span-12 xl:col-span-10',
+  'col-span-12 xl:col-span-11',
+  'col-span-12',
+] as const;
+
+const DEFAULT_SPAN: Record<DashboardItem['type'], number> = {
+  stat: 3,
+  chart: 6,
+  headline: 4,
+  ranking: 4,
+};
+
+function placementClass(item: DashboardItem): string {
+  return cn(SPAN_CLASSES[(item.span ?? DEFAULT_SPAN[item.type]) - 1], item.rows === 2 && 'xl:row-span-2');
+}
 
 interface DashboardViewProps {
   dashboardId: string;
@@ -52,11 +89,9 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
     }
   }, [dashboard, dashboards, navigate, section]);
 
-  const historyIds = useMemo(
-    () => (dashboard ? collectHistoryMetricIds(dashboard.cards, dashboard.charts) : new Set<string>()),
-    [dashboard],
-  );
-  const liveIds = useMemo(() => (dashboard ? collectLiveMetricIds(dashboard.cards) : new Set<string>()), [dashboard]);
+  const items = useMemo(() => (dashboard ? dashboardItems(dashboard) : EMPTY_ITEMS), [dashboard]);
+  const historyIds = useMemo(() => collectHistoryMetricIds(items), [items]);
+  const liveIds = useMemo(() => collectLiveMetricIds(items), [items]);
 
   const history = useHistoryMetrics(period, historyIds, nodeId);
   const allNodesHistory = useHistoryMetrics(period, historyIds, null, nodeId === null);
@@ -89,7 +124,7 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
   if (!dashboard) {
     if (dashboards.length === 0) {
       return (
-        <div className="flex items-center justify-center p-8 text-muted-foreground">
+        <div className="rounded-2xl bg-muted p-10 text-center text-muted-foreground">
           {t('dashboard.noDashboards', 'No dashboards configured.')}
         </div>
       );
@@ -98,8 +133,8 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-3.5">
+      <div className="flex flex-wrap items-end justify-between gap-4 px-1 pb-1 pt-3">
         {dashboards.length > 1 && (
           <Tabs
             className="min-w-0 max-w-full"
@@ -115,7 +150,7 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
             </TabsList>
           </Tabs>
         )}
-        {dashboards.length === 1 && <h1 className="text-xl font-semibold">{dashboard.label}</h1>}
+        {dashboards.length === 1 && <h1 className="page-title">{dashboard.label}</h1>}
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {showNodeSelector && <NodeSelector nodes={nodes} value={nodeId} onChange={setNodeId} />}
@@ -126,7 +161,7 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
       {history.isError && (
         <div
           role="alert"
-          className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+          className="flex items-center gap-2 rounded-xl bg-destructive-soft p-4 text-sm text-destructive"
         >
           <AlertCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
           {errorMessage(history.error, t('dashboard.failedFetchMetrics', 'Failed to fetch metrics'))}
@@ -136,37 +171,46 @@ export function DashboardView({ dashboardId, section }: DashboardViewProps) {
       {liveStatus === 'error' && liveError && (
         <div
           role="alert"
-          className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+          className="flex items-center gap-2 rounded-xl bg-destructive-soft p-4 text-sm text-destructive"
         >
           <AlertCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
           {liveError}
         </div>
       )}
 
-      {dashboard.cards && dashboard.cards.length > 0 && (
-        <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
-          {dashboard.cards.map((card, i) => (
-            <StatCard
-              key={`${card.title}-${i}`}
-              card={card}
-              historySamples={historySamples}
-              historyWindow={historyWindow}
-            />
-          ))}
-        </div>
-      )}
-
-      {dashboard.charts && dashboard.charts.length > 0 && (
-        <div className="space-y-4">
-          {dashboard.charts.map((chart, i) => (
-            <DashboardChart
-              key={`${chart.title}-${i}`}
-              chart={chart}
-              historySamples={historySamples}
-              historyWindow={historyWindow}
-              period={period}
-            />
-          ))}
+      {items.length > 0 && (
+        <div className="grid grid-flow-row-dense grid-cols-12 gap-3.5 xl:grid-flow-row">
+          {items.map((item, i) => {
+            const key = `${item.type}-${item.title}-${i}`;
+            const className = placementClass(item);
+            switch (item.type) {
+              case 'stat':
+                return (
+                  <StatCard
+                    key={key}
+                    card={item}
+                    className={className}
+                    historySamples={historySamples}
+                    historyWindow={historyWindow}
+                  />
+                );
+              case 'chart':
+                return (
+                  <DashboardChart
+                    key={key}
+                    chart={item}
+                    className={className}
+                    historySamples={historySamples}
+                    historyWindow={historyWindow}
+                    period={period}
+                  />
+                );
+              case 'headline':
+                return <HeadlineTile key={key} headline={item} className={className} historySamples={historySamples} />;
+              case 'ranking':
+                return <RankingTile key={key} ranking={item} className={className} historySamples={historySamples} />;
+            }
+          })}
         </div>
       )}
     </div>

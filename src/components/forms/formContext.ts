@@ -30,6 +30,8 @@ export const FormContext = createContext<FormContextValue | null>(null);
 
 export const FieldScopeContext = createContext<FieldScope>({ path: [], readOnly: false });
 
+export const PanelContext = createContext(false);
+
 export function useFormContext(): FormContextValue {
   const ctx = useContext(FormContext);
   if (!ctx) throw new Error('Form widgets must be rendered inside a FormProvider');
@@ -38,6 +40,10 @@ export function useFormContext(): FormContextValue {
 
 export function useFieldScope(): FieldScope {
   return useContext(FieldScopeContext);
+}
+
+export function useInPanel(): boolean {
+  return useContext(PanelContext);
 }
 
 export function isEnterpriseLockedIn(ctx: FormContextValue, enterprise: boolean | undefined): boolean {

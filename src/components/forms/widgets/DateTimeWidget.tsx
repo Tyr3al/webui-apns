@@ -20,7 +20,7 @@ const Calendar = lazy(() => import('@/components/ui/calendar').then((m) => ({ de
 function CalendarFallback() {
   return (
     <div className="flex h-72 w-64 items-center justify-center" role="status">
-      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden="true" />
+      <Loader2 className="h-5 w-5 animate-spin text-brand-text" aria-hidden="true" />
     </div>
   );
 }
@@ -50,15 +50,15 @@ export function DateTimeWidget({ type, value, onChange, readOnly, control }: Wid
           <Button
             {...control}
             type="button"
-            variant="outline"
+            variant="field"
             disabled={readOnly}
-            className={cn('flex-1 justify-start text-left font-normal', !selected && 'text-muted-foreground')}
+            className={cn('flex-1 justify-start px-3 text-left', !selected && 'text-dim')}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+            <CalendarIcon className="text-dim" aria-hidden="true" />
             {selected ? formatDateTime(selected) : t('field.pickDate', 'Pick a date')}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
           <Suspense fallback={<CalendarFallback />}>
             <Calendar
               mode="single"
@@ -70,7 +70,7 @@ export function DateTimeWidget({ type, value, onChange, readOnly, control }: Wid
               }}
             />
           </Suspense>
-          <div className="border-t p-3">
+          <div className="border-t border-border bg-muted/60 p-3">
             <Input
               type="time"
               value={localTime}
@@ -92,7 +92,7 @@ export function DateTimeWidget({ type, value, onChange, readOnly, control }: Wid
           onClick={() => onChange(null)}
           aria-label={t('common.clear', 'Clear')}
         >
-          <X className="h-4 w-4" />
+          <X aria-hidden="true" />
         </Button>
       )}
     </div>

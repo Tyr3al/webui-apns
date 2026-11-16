@@ -5,7 +5,17 @@
  */
 
 import type { ClusterNodeInfo, Metric, MetricId, Period, PresetKey } from './types/metrics';
-import type { Aggregate, Card, Chart, MetricFormat, MetricScope } from './types/schema';
+import type {
+  Aggregate,
+  Card,
+  Dashboard,
+  DashboardItem,
+  Headline,
+  MetricFormat,
+  MetricScope,
+  Polarity,
+  Ranking,
+} from './types/schema';
 import { PRESET_MS, BUCKET_CONFIG, CUSTOM_BUCKET_COUNT, SPARKLINE_BUCKET_COUNT } from './types/metrics';
 import { formatCompactNumber, formatDate, formatElapsed, formatPercent, formatSize, formatTime } from '@/lib/format';
 
@@ -79,9 +89,27 @@ function pushValue(groups: Map<number, number[]>, nodeId: number, value: number)
   else groups.set(nodeId, [value]);
 }
 
+const samplesByMetric = new WeakMap<Metric[], Map<MetricId, Metric[]>>();
+
+function indexSamples(samples: Metric[]): Map<MetricId, Metric[]> {
+  let index = samplesByMetric.get(samples);
+  if (!index) {
+    index = new Map();
+    for (const m of samples) {
+      const list = index.get(m.metric);
+      if (list) list.push(m);
+      else index.set(m.metric, [m]);
+    }
+    samplesByMetric.set(samples, index);
+  }
+  return index;
+}
+
 export function selectSamples(target: MetricTarget, samples: Metric[]): Metric[] {
-  const ids = new Set(target.metrics);
-  return samples.filter((m) => ids.has(m.metric));
+  const index = indexSamples(samples);
+  const unique = new Set(target.metrics);
+  if (unique.size === 1) return index.get(target.metrics[0]) ?? [];
+  return [...unique].flatMap((id) => index.get(id) ?? []);
 }
 
 export function latestSamples(samples: Metric[]): Metric[] {
@@ -319,33 +347,66 @@ export function formatTimeTick(date: Date, period: Period): string {
   return intraday ? formatTime(date) : formatDate(date, TICK_DATE);
 }
 
-export function collectHistoryMetricIds(cards: Card[] | undefined, charts: Chart[] | undefined): Set<MetricId> {
-  const ids = new Set<MetricId>();
-  if (cards) {
-    for (const card of cards) {
-      if (card.source === 'history') {
-        for (const id of card.metrics) ids.add(id);
-      }
-    }
-  }
-  if (charts) {
-    for (const chart of charts) {
-      for (const series of chart.series) {
-        for (const id of series.metrics) ids.add(id);
-      }
-    }
-  }
-  return ids;
+export function dashboardItems(dashboard: Dashboard): DashboardItem[] {
+  if (dashboard.items && dashboard.items.length > 0) return dashboard.items;
+  const charts = dashboard.charts ?? [];
+  return [
+    ...(dashboard.cards ?? []).map((card): DashboardItem => ({ type: 'stat', ...card })),
+    ...charts.map((chart, i): DashboardItem => ({
+      type: 'chart',
+      ...chart,
+      ...(charts.length % 2 === 1 && i === charts.length - 1 && { span: 12 }),
+    })),
+  ];
 }
 
-export function collectLiveMetricIds(cards: Card[] | undefined): Set<MetricId> {
-  const ids = new Set<MetricId>();
-  if (cards) {
-    for (const card of cards) {
-      if (card.source === 'live') {
-        for (const id of card.metrics) ids.add(id);
-      }
-    }
+function itemHistoryMetrics(item: DashboardItem): MetricId[] {
+  switch (item.type) {
+    case 'stat':
+      return item.source === 'history' ? item.metrics : [];
+    case 'chart':
+    case 'ranking':
+      return item.series.flatMap((series) => series.metrics);
+    case 'headline':
+      return [...item.numerator, ...item.denominator];
   }
-  return ids;
+}
+
+export function collectHistoryMetricIds(items: readonly DashboardItem[]): Set<MetricId> {
+  return new Set(items.flatMap(itemHistoryMetrics));
+}
+
+export function collectLiveMetricIds(items: readonly DashboardItem[]): Set<MetricId> {
+  return new Set(items.flatMap((item) => (item.type === 'stat' && item.source === 'live' ? item.metrics : [])));
+}
+
+export function headlineRatio(headline: Headline, samples: Metric[]): number | null {
+  const reduce = (metrics: MetricId[]) => {
+    const target = { metrics, aggregate: headline.aggregate, scope: headline.scope };
+    return reduceSamples(target, selectSamples(target, samples)) ?? 0;
+  };
+  const denominator = reduce(headline.denominator);
+  if (denominator <= 0) return null;
+  return reduce(headline.numerator) / denominator;
+}
+
+interface RankingEntry {
+  label: string;
+  value: number;
+}
+
+export function rankingEntries(ranking: Ranking, samples: Metric[]): RankingEntry[] {
+  return ranking.series
+    .map((series) => ({ label: series.label, value: reduceSamples(series, selectSamples(series, samples)) ?? 0 }))
+    .sort((a, b) => b.value - a.value);
+}
+
+export type DeltaSentiment = 'good' | 'bad' | 'neutral';
+
+export function deltaSentiment(
+  direction: 'up' | 'down' | 'neutral',
+  polarity: Polarity = 'higherIsBetter',
+): DeltaSentiment {
+  if (direction === 'neutral' || polarity === 'neutral') return 'neutral';
+  return (direction === 'up') === (polarity === 'higherIsBetter') ? 'good' : 'bad';
 }

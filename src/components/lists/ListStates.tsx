@@ -14,20 +14,20 @@ export function ListSpinner({ className }: { className?: string }) {
   const { t } = useTranslation();
   return (
     <div role="status" className={className ?? 'flex items-center justify-center p-8'}>
-      <Loader2 className="h-6 w-6 animate-spin" aria-hidden />
+      <Loader2 className="h-6 w-6 animate-spin text-brand-text" aria-hidden />
       <span className="sr-only">{t('common.loading', 'Loading...')}</span>
     </div>
   );
 }
 
 export function ListMessage({ children }: { children: ReactNode }) {
-  return <div className="p-8 text-center text-muted-foreground">{children}</div>;
+  return <div className="rounded-2xl bg-muted p-10 text-center text-muted-foreground">{children}</div>;
 }
 
 export function ListTableMessage({ colSpan, children }: { colSpan: number; children: ReactNode }) {
   return (
     <tr>
-      <td colSpan={colSpan} className="px-3 py-12 text-center text-muted-foreground">
+      <td colSpan={colSpan} className="border-t border-border px-3 py-12 text-center text-muted-foreground">
         {children}
       </td>
     </tr>
@@ -47,12 +47,17 @@ export function ListError({
   return (
     <div
       role="alert"
-      className="flex items-start justify-between gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+      className="flex items-start justify-between gap-3 rounded-xl bg-destructive-soft p-4 text-sm text-destructive"
     >
       <span className="whitespace-pre-line">{message}</span>
       <div className="flex shrink-0 items-center gap-1">
         {onRetry && (
-          <Button variant="ghost" size="sm" className="h-7" onClick={onRetry}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={onRetry}
+          >
             {t('common.retry', 'Retry')}
           </Button>
         )}
@@ -60,7 +65,7 @@ export function ListError({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={onDismiss}
             aria-label={t('common.close', 'Close')}
           >

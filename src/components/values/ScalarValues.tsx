@@ -19,8 +19,8 @@ export type ValueVariant = 'full' | 'compact';
 
 export function EmptyValue({ variant = 'full' }: { variant?: ValueVariant }) {
   const { t } = useTranslation();
-  if (variant === 'compact') return <span className="text-muted-foreground">-</span>;
-  return <span className="text-sm italic text-muted-foreground">{t('field.notSet', 'Not set')}</span>;
+  if (variant === 'compact') return <span className="text-dim">-</span>;
+  return <span className="text-sm italic text-dim">{t('field.notSet', 'Not set')}</span>;
 }
 
 export function StringValue({
@@ -39,7 +39,10 @@ export function StringValue({
   if (format === 'color') {
     return (
       <span className="inline-flex items-center gap-2 text-sm">
-        <span className="inline-block h-3.5 w-3.5 shrink-0 rounded-sm border" style={{ backgroundColor: str }} />
+        <span
+          className="inline-block h-3.5 w-3.5 shrink-0 rounded-full shadow-[inset_0_0_0_1px_var(--input)]"
+          style={{ backgroundColor: str }}
+        />
         <span className="font-mono">{str}</span>
       </span>
     );
@@ -48,8 +51,8 @@ export function StringValue({
     return (
       <pre
         className={cn(
-          'whitespace-pre-wrap break-words rounded bg-muted/50 font-mono text-xs',
-          variant === 'compact' ? 'max-w-md px-1.5 py-1' : 'p-2',
+          'whitespace-pre-wrap break-words bg-muted font-mono text-xs',
+          variant === 'compact' ? 'max-w-md rounded-lg px-2 py-1' : 'rounded-xl p-3',
           format === 'text' && 'font-sans',
         )}
       >
@@ -72,9 +75,9 @@ export function NumberValue({ value, format }: { value: unknown; format: string 
 export function BooleanValue({ value }: { value: unknown }) {
   const { t } = useTranslation();
   return value === true ? (
-    <Check className="h-4 w-4 text-green-600" role="img" aria-label={t('common.yes', 'Yes')} />
+    <Check className="h-4 w-4 text-success" role="img" aria-label={t('common.yes', 'Yes')} />
   ) : (
-    <X className="h-4 w-4 text-red-500" role="img" aria-label={t('common.no', 'No')} />
+    <X className="h-4 w-4 text-destructive" role="img" aria-label={t('common.no', 'No')} />
   );
 }
 
@@ -83,7 +86,11 @@ export function EnumValue({ schema, enumName, value }: { schema: Schema; enumNam
   const variant = getEnumVariant(schema, enumName, name);
   if (!variant) return <span className="text-sm">{name}</span>;
   return (
-    <Badge variant="secondary" style={variant.color ? { backgroundColor: variant.color, color: '#fff' } : undefined}>
+    <Badge
+      variant="secondary"
+      className={cn('h-6', variant.color && 'text-primary-foreground')}
+      style={variant.color ? { backgroundColor: variant.color } : undefined}
+    >
       {variant.label}
     </Badge>
   );
@@ -104,7 +111,7 @@ export function ObjectIdValue({
   const content = loading && !label ? <Loader2 className="h-3 w-3 animate-spin" /> : (label ?? id);
   if (variant === 'compact') return <span>{content}</span>;
   return (
-    <Badge variant="secondary" className="text-sm">
+    <Badge variant="secondary" className="h-6 font-medium">
       {content}
     </Badge>
   );

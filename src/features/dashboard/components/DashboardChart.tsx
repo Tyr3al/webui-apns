@@ -5,38 +5,29 @@
  */
 
 import { useMemo } from 'react';
-import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts';
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 import { Info } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { HelpTooltip } from '@/components/common/HelpTooltip';
-import { getChartColor } from '@/components/ui/chart';
-import { ChartTooltipContent } from '@/components/ui/chart';
-import type { Chart as ChartSchema } from '../types/schema';
+import { ChartTooltipContent, getChartColor } from '@/components/ui/chart';
+import type { Chart as ChartSchema, Placement } from '../types/schema';
 import type { Metric, Period } from '../types/metrics';
 import { bucketTimestamps, bucketValues, getBucketCount, formatTimeTick, formatValue } from '../helpers';
 import { ChartSizedContainer } from './ChartSizedContainer';
+import { toneClasses } from './tone';
+import { cn } from '@/lib/utils';
 
 interface DashboardChartProps {
-  chart: ChartSchema;
+  chart: ChartSchema & Placement;
   historySamples: Metric[];
   historyWindow: { from: Date; to: Date };
   period: Period;
+  className?: string;
 }
 
-export function DashboardChart({ chart, historySamples, historyWindow, period }: DashboardChartProps) {
+export function DashboardChart({ chart, historySamples, historyWindow, period, className }: DashboardChartProps) {
+  const toneClass = toneClasses(chart.tone);
   const { from, to } = historyWindow;
   const bucketCount = getBucketCount(period);
   const valueFormat = chart.valueFormat ?? 'number';
@@ -82,7 +73,7 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
       data,
       width: chartWidth,
       height: chartHeight,
-      margin: { top: 5, right: 10, left: 10, bottom: 5 },
+      margin: { top: 6, right: 4, left: 0, bottom: 0 },
     };
 
     const seriesElements = chart.series.map((s, i) => {
@@ -97,8 +88,11 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
               type="monotone"
               dataKey={key}
               stroke={color}
-              strokeWidth={2}
+              strokeWidth={2.25}
+              strokeLinecap="round"
+              strokeLinejoin="round"
               dot={false}
+              activeDot={{ r: 3.5, strokeWidth: 0 }}
               isAnimationActive={false}
               connectNulls
             />
@@ -111,8 +105,9 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
               dataKey={key}
               stroke={color}
               fill={color}
-              fillOpacity={0.3}
+              fillOpacity={chart.stacked ? 0.35 : 0.14}
               strokeWidth={2}
+              activeDot={{ r: 3.5, strokeWidth: 0 }}
               stackId={chart.stacked ? '1' : undefined}
               isAnimationActive={false}
               connectNulls
@@ -124,6 +119,8 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
               key={key}
               dataKey={key}
               fill={color}
+              radius={chart.stacked ? 0 : [4, 4, 0, 0]}
+              maxBarSize={28}
               stackId={chart.stacked ? '1' : undefined}
               isAnimationActive={false}
             />
@@ -133,23 +130,24 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
 
     const axes = (
       <>
-        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+        <CartesianGrid vertical={false} className="stroke-border" />
         <XAxis
           dataKey="timeLabel"
-          tick={{ fontSize: 11 }}
-          className="text-muted-foreground"
+          tick={{ fontSize: 10.5, fill: 'var(--dim)' }}
           tickLine={false}
           axisLine={false}
+          tickMargin={8}
+          minTickGap={16}
         />
         <YAxis
           tickFormatter={tickFormatter}
-          tick={{ fontSize: 11 }}
-          className="text-muted-foreground"
+          tick={{ fontSize: 10.5, fill: 'var(--dim)' }}
           tickLine={false}
           axisLine={false}
-          width={60}
+          width={56}
         />
         <Tooltip
+          cursor={chart.kind === 'bar' ? { fill: 'var(--muted)', opacity: 0.6 } : { stroke: 'var(--input)' }}
           content={({ active, payload, label }) => (
             <ChartTooltipContent
               active={active}
@@ -159,7 +157,6 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
             />
           )}
         />
-        <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
       </>
     );
 
@@ -189,16 +186,32 @@ export function DashboardChart({ chart, historySamples, historyWindow, period }:
   };
 
   return (
-    <Card role="figure" aria-label={chart.title}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <CardTitle className="text-base">{chart.title}</CardTitle>
+    <Card
+      role="figure"
+      aria-label={chart.title}
+      className={cn('flex flex-col gap-3 px-5 pb-3.5 pt-[18px]', toneClass.surface, className)}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="section-title truncate">{chart.title}</h2>
           {chart.description && <HelpTooltip content={chart.description} label={chart.title} icon={Info} />}
         </div>
-      </CardHeader>
-      <CardContent>
-        <ChartSizedContainer height={288}>{(width, height) => renderChart(width, height)}</ChartSizedContainer>
-      </CardContent>
+        {chart.series.length > 0 && (
+          <ul className={cn('flex flex-wrap gap-x-3.5 gap-y-1 text-[12.5px]', toneClass.muted)}>
+            {chart.series.map((s, i) => (
+              <li key={`${s.label}-${i}`} className="inline-flex items-center gap-1.5">
+                <span
+                  aria-hidden="true"
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: getChartColor(i) }}
+                />
+                {s.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <ChartSizedContainer fill={chart.rows === 2}>{(width, height) => renderChart(width, height)}</ChartSizedContainer>
     </Card>
   );
 }

@@ -10,7 +10,7 @@ import type { WidgetProps } from '@/components/forms/widgets/types';
 export function UnsupportedWidget({ type }: WidgetProps) {
   const { t } = useTranslation();
   return (
-    <p className="text-sm text-muted-foreground">
+    <p className="rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">
       {t('field.unsupportedType', 'Unsupported field type: {{type}}', { type: (type as { type?: string }).type ?? '' })}
     </p>
   );

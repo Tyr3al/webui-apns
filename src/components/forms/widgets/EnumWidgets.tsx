@@ -98,7 +98,7 @@ export function EnumMultiSelect({ enumName, items, onChange, readOnly, minItems,
   const checkboxItem = (v: EnumVariant, idPrefix: string) => {
     const id = `${idPrefix}-${v.name.replace(/[^A-Za-z0-9_-]/g, '_')}`;
     return (
-      <div key={v.name} className="flex items-center gap-2 py-0.5">
+      <div key={v.name} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted">
         <Checkbox
           id={id}
           checked={items.includes(v.name)}
@@ -116,7 +116,11 @@ export function EnumMultiSelect({ enumName, items, onChange, readOnly, minItems,
 
   if (variants.length <= SEARCHABLE_THRESHOLD) {
     return (
-      <div className={variants.length > GRID_THRESHOLD ? 'grid grid-cols-2 gap-2' : 'space-y-2'}>
+      <div
+        className={
+          variants.length > GRID_THRESHOLD ? '-mx-2 grid gap-x-2 gap-y-0.5 sm:grid-cols-2' : '-mx-2 space-y-0.5'
+        }
+      >
         {variants.map((v) => checkboxItem(v, baseId))}
       </div>
     );
@@ -150,22 +154,23 @@ export function EnumMultiSelect({ enumName, items, onChange, readOnly, minItems,
       )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button {...control} type="button" variant="outline" size="sm" className="gap-1" disabled={readOnly}>
-            <Search className="h-4 w-4" aria-hidden="true" />
+          <Button {...control} type="button" variant="secondary" size="sm" disabled={readOnly}>
+            <Search aria-hidden="true" />
             {t('field.selectOptions', 'Select options...')}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-0" align="start">
-          <div className="border-b p-2">
+        <PopoverContent className="w-72 overflow-hidden p-0" align="start">
+          <div className="p-2 pb-1">
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('common.searchPlaceholder', 'Search...')}
               aria-label={t('common.search', 'Search')}
-              className="h-8"
+              variant="pill"
+              className="h-8 px-3.5"
             />
           </div>
-          <div className="max-h-60 space-y-1 overflow-y-auto p-2">
+          <div className="max-h-60 space-y-0.5 overflow-y-auto p-1.5">
             {filtered.length === 0 && (
               <p className="py-2 text-center text-sm text-muted-foreground">{t('field.noMatches', 'No matches')}</p>
             )}

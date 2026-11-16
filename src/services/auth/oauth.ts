@@ -24,17 +24,25 @@ export interface DiscoveryResponse {
   protected_resources?: string[];
 }
 
+export function getMetaScopes(): string[] {
+  const content = document.querySelector('meta[name="oauth-scopes"]')?.getAttribute('content') ?? '';
+  return content.split(/\s+/).filter((scope) => scope.length > 0);
+}
+
 export function selectScopes(
   discovery: Pick<DiscoveryResponse, 'scopes_supported' | 'stalwart_required_scopes'>,
   override: string | undefined = SCOPES_OVERRIDE,
+  extra: string[] = getMetaScopes(),
 ): string {
   const trimmed = override?.trim();
   if (trimmed) return trimmed;
   const required = discovery.stalwart_required_scopes;
-  if (Array.isArray(required)) {
-    return required.filter((scope) => typeof scope === 'string' && scope.length > 0).join(' ');
-  }
-  return discovery.scopes_supported?.includes('openid') ? 'openid' : '';
+  const scopes = Array.isArray(required)
+    ? required.filter((scope) => typeof scope === 'string' && scope.length > 0)
+    : discovery.scopes_supported?.includes('openid')
+      ? ['openid']
+      : [];
+  return [...new Set([...scopes, ...extra])].join(' ');
 }
 
 export function selectResource(
@@ -227,7 +235,7 @@ export async function startAuthFlow(username: string, returnUrl?: string | null)
     params.set('resource', resource);
   }
 
-  window.location.href = `${authorization_endpoint}?${params.toString()}`;
+  window.location.href = appendQuery(authorization_endpoint, params);
 }
 
 export function getStoredOAuthData() {
@@ -268,6 +276,10 @@ export function buildEndSessionUrl(endSessionEndpoint: string, postLogoutRedirec
     client_id: clientId,
     post_logout_redirect_uri: postLogoutRedirectUri,
   });
-  const sep = endSessionEndpoint.includes('?') ? '&' : '?';
-  return `${endSessionEndpoint}${sep}${params.toString()}`;
+  return appendQuery(endSessionEndpoint, params);
+}
+
+function appendQuery(endpoint: string, params: URLSearchParams): string {
+  const sep = endpoint.includes('?') ? '&' : '?';
+  return `${endpoint}${sep}${params.toString()}`;
 }

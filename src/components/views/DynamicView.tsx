@@ -5,8 +5,8 @@
  */
 
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ValueRow } from '@/components/values/FieldValue';
+import { cn } from '@/lib/utils';
 import { resolveForm, resolveSchema, resolveVariantForm } from '@/lib/schemaResolver';
 import { isEmptyValue, variantLabel } from '@/lib/embeddedSchema';
 import type { Field, Fields, Form, FormField, Schema } from '@/types/schema';
@@ -77,34 +77,24 @@ export function DynamicView({ schema, objectName, viewName, data, visibleFields 
   const typeLabel = variantLabel(schema, objectName, data['@type']);
 
   return (
-    <div className="space-y-4">
-      {typeLabel && (
-        <Badge variant="secondary" className="text-xs">
-          {typeLabel}
-        </Badge>
-      )}
+    <div className="space-y-3.5">
+      {typeLabel && <Badge variant="default">{typeLabel}</Badge>}
       {sections.map((section) => (
-        <Card key={section.key}>
-          {section.title && (
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">{section.title}</CardTitle>
-            </CardHeader>
-          )}
-          <CardContent className={section.title ? 'pt-0' : ''}>
-            <dl className="space-y-2">
-              {section.items.map(({ formField, field }) => (
-                <ValueRow
-                  key={formField.name}
-                  schema={schema}
-                  label={formField.label}
-                  description={field.description}
-                  type={field.type}
-                  value={data[formField.name]}
-                />
-              ))}
-            </dl>
-          </CardContent>
-        </Card>
+        <section key={section.key} className="tile @container px-5 pb-1.5 sm:px-6">
+          {section.title && <h2 className="section-title pb-1 pt-5">{section.title}</h2>}
+          <dl className={cn('divide-y divide-border', !section.title && 'pt-1')}>
+            {section.items.map(({ formField, field }) => (
+              <ValueRow
+                key={formField.name}
+                schema={schema}
+                label={formField.label}
+                description={field.description}
+                type={field.type}
+                value={data[formField.name]}
+              />
+            ))}
+          </dl>
+        </section>
       ))}
     </div>
   );
