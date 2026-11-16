@@ -28,10 +28,7 @@ function Banner({ destructive, children }: { destructive?: boolean; children: Re
   return (
     <div
       role={destructive ? 'alert' : 'status'}
-      className={cn(
-        'rounded-lg border p-4',
-        destructive ? 'border-destructive/50 bg-destructive/10 text-destructive' : 'border-border bg-card',
-      )}
+      className={cn(destructive ? 'rounded-xl bg-destructive-soft p-4 text-destructive' : 'tile px-5 py-4')}
     >
       {children}
     </div>
@@ -65,13 +62,18 @@ function CompletionSummary({ run }: { run: DeliveryRun }) {
   const { attempts, delivered } = summarizeDelivery(run.stages);
   return (
     <Banner>
-      <div className="flex items-center gap-2">
-        {delivered ? (
-          <CircleCheck aria-hidden="true" className="h-4 w-4 text-emerald-500" />
-        ) : (
-          <CircleX aria-hidden="true" className="h-4 w-4 text-red-500" />
-        )}
-        <span className="text-sm font-medium">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <span
+          className={cn(
+            'inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold',
+            delivered ? 'bg-success-soft text-success' : 'bg-destructive-soft text-destructive',
+          )}
+        >
+          {delivered ? (
+            <CircleCheck aria-hidden="true" className="size-3.5" />
+          ) : (
+            <CircleX aria-hidden="true" className="size-3.5" />
+          )}
           {delivered
             ? t('deliveryTrace.deliverySuccessful', 'Delivery successful')
             : t('deliveryTrace.deliveryFailed', 'Delivery failed')}
@@ -92,11 +94,11 @@ function CompletionSummary({ run }: { run: DeliveryRun }) {
 function WaitingIndicator() {
   const { t } = useTranslation();
   return (
-    <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
       <div aria-hidden="true" className="flex gap-1">
-        <span className="animate-pulse">.</span>
-        <span className="animate-pulse [animation-delay:0.2s]">.</span>
-        <span className="animate-pulse [animation-delay:0.4s]">.</span>
+        <span className="size-1.5 animate-pulse rounded-full bg-current" />
+        <span className="size-1.5 animate-pulse rounded-full bg-current [animation-delay:0.2s]" />
+        <span className="size-1.5 animate-pulse rounded-full bg-current [animation-delay:0.4s]" />
       </div>
       {t('deliveryTrace.waiting', 'Waiting for more events')}
     </div>
@@ -109,10 +111,10 @@ export function DeliveryTraceResult({ run, phase, onCancel, onReset }: DeliveryT
   const target = run.target;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">
+    <div className="space-y-3.5">
+      <div className="flex flex-wrap items-end justify-between gap-4 px-1 pb-1 pt-3">
+        <div className="min-w-0 space-y-1">
+          <h1 className="page-title break-words">
             {phase.kind === 'running'
               ? t('deliveryTrace.tracingDelivery', 'Tracing delivery to {{target}}', { target })
               : phase.kind === 'completed'
@@ -123,7 +125,7 @@ export function DeliveryTraceResult({ run, phase, onCancel, onReset }: DeliveryT
         </div>
         {phase.kind === 'running' ? (
           <Button variant="outline" onClick={onCancel}>
-            <StopCircle aria-hidden="true" className="mr-2 h-4 w-4" />
+            <StopCircle aria-hidden="true" />
             {t('deliveryTrace.cancelTrace', 'Cancel trace')}
           </Button>
         ) : (
@@ -141,16 +143,16 @@ export function DeliveryTraceResult({ run, phase, onCancel, onReset }: DeliveryT
       )}
 
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-5">
           <div aria-live="polite">
             {groups.map((group) => (
               <div key={group.key}>
                 {group.attempt && (
-                  <div className="mb-1 mt-3">
+                  <div className="mb-1 mt-3 first:mt-0">
                     <StageRow stage={group.attempt.stage} />
                   </div>
                 )}
-                <div className={group.attempt ? 'ml-6 border-l-2 border-muted/40 pl-4' : undefined}>
+                <div className={group.attempt ? 'ml-3 border-l-2 border-input pl-5' : undefined}>
                   {group.stages.map((item) => (
                     <StageRow key={item.key} stage={item.stage} />
                   ))}

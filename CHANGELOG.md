@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
+## [2.0.6-apns.1] - 2026-11-16
+
+### Changed
+- Rebased onto upstream [v2.0.6](https://github.com/stalwartlabs/webui/blob/main/CHANGELOG.md) (from v2.0.3), picking up the schema-driven dashboard redesign, passkey registration, locale-aware date and number formatting and the OAuth fixes from upstream v2.0.4–v2.0.6. The fork's XAPS push-device pages, settings form and menu entries are carried over unchanged.
+
+## [2.0.6] - 2026-11-13
+
+### Fixed
+- OIDC sign-in keeps a query already present in the provider's `authorization_endpoint` (for example Casdoor's `?organization=`) and appends its own parameters with `&`.
+- Clicking or hovering a list row in Safari now targets that row instead of the last row of the table.
+
+## [2.0.5] - 2026-11-05
+
+### Added
+- Passkey registration under Account > Credentials.
+
+### Changed
+
+### Fixed
+- Dates and numbers are formatted with the account locale, or the browser's preferred language when the account uses the default, instead of always en-US.
+- The last setup screen no longer tells users to sign in with credentials that were never created when an external directory is used.
+
+## [2.0.4] - 2026-11-02
+
+### Added
+- New WebUI design with more pizzazz:
+    - Cleaner generated forms: two-column fields that stack on mobile, simpler nested objects, collapsible list items, segmented variant pickers, a section index on wide screens and a floating save bar.
+    - Dashboards support a layout with stat, chart, headline and ranking tiles, plus column and row spans, tones and delta polarity, all defined in the schema.
+- Custom OAuth scopes can be requested through the `oauth-scopes` meta tag; they are added to the scopes required by the server.
+
+### Changed
+
+### Fixed
+
+## [2.0.3] - 2026-10-29
+
 ## [2.0.3-apns.1] - 2026-10-30
 
 ### Changed

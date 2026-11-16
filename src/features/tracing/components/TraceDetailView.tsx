@@ -33,7 +33,7 @@ export function TraceDetailView({ viewName, objectId }: TraceDetailViewProps) {
 
   const backButton = (
     <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-      <ArrowLeft aria-hidden="true" className="mr-2 h-4 w-4" />
+      <ArrowLeft aria-hidden="true" />
       {t('common.back', 'Back')}
     </Button>
   );
@@ -60,9 +60,9 @@ export function TraceDetailView({ viewName, objectId }: TraceDetailViewProps) {
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3.5 pt-3">
         {backButton}
-        <div role="alert" className="p-4 text-destructive">
+        <div role="alert" className="rounded-xl bg-destructive-soft p-4 text-sm text-destructive">
           {error}
         </div>
       </div>
@@ -72,11 +72,11 @@ export function TraceDetailView({ viewName, objectId }: TraceDetailViewProps) {
   if (!events) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 pt-3">
       {backButton}
       <TraceSummaryCards events={events} />
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-5">
           <TraceTimeline events={events} anchorTimestamp={events[0]?.timestamp} />
         </CardContent>
       </Card>

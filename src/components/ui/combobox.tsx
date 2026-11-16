@@ -82,11 +82,11 @@ export function Combobox({
           {...ariaProps}
           ref={triggerRef}
           type="button"
-          variant="outline"
+          variant="field"
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn('w-full justify-between font-normal', !selected && 'text-muted-foreground', className)}
+          className={cn('w-full justify-between px-3', !selected && 'text-dim', className)}
         >
           <span className="flex items-center gap-2 truncate">
             {selected?.marker}

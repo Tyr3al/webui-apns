@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronUp, Filter as FilterIcon, RotateCcw, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { Filter, Schema } from '@/types/schema';
 import { filtersKey } from './listUrlState';
@@ -50,23 +51,48 @@ export function FilterBar({ schema, filters, applied, isXPrefixed, disabled, onA
     onReset();
   };
 
+  const activeCount = filters.filter((f) => Object.hasOwn(applied, f.field) && applied[f.field] !== '').length;
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2" aria-controls={panelId}>
-          <FilterIcon className="h-4 w-4" aria-hidden />
-          {t('list.filters', 'Filters')}
-          {open ? <ChevronUp className="h-4 w-4" aria-hidden /> : <ChevronDown className="h-4 w-4" aria-hidden />}
-        </Button>
-      </CollapsibleTrigger>
+      <div className="flex flex-wrap items-center gap-2 p-2.5">
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            aria-controls={panelId}
+            className={cn(
+              'inline-flex h-8 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200 ease-bento focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              activeCount > 0 || open
+                ? 'bg-highlight text-highlight-foreground hover:bg-highlight-strong'
+                : 'bg-muted text-muted-foreground hover:bg-muted-strong hover:text-foreground',
+            )}
+          >
+            <FilterIcon className="h-3.5 w-3.5" aria-hidden />
+            {t('list.filters', 'Filters')}
+            {activeCount > 0 && (
+              <span
+                className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-semibold text-primary-foreground"
+                aria-hidden
+              >
+                {activeCount}
+              </span>
+            )}
+            {open ? (
+              <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+            )}
+          </button>
+        </CollapsibleTrigger>
+      </div>
       <CollapsibleContent id={panelId}>
         <form
           role="search"
           aria-label={t('list.filters', 'Filters')}
           onSubmit={handleSubmit}
-          className="mt-2 rounded-lg border bg-background shadow-sm"
+          className="mx-2.5 mb-2.5 rounded-xl bg-muted p-4"
         >
-          <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filters.map((filter) => (
               <FilterField
                 key={filter.field}
@@ -79,13 +105,13 @@ export function FilterBar({ schema, filters, applied, isXPrefixed, disabled, onA
               />
             ))}
           </div>
-          <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
+          <div className="mt-4 flex items-center justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={handleReset} disabled={disabled}>
-              <RotateCcw className="mr-2 h-4 w-4" aria-hidden />
+              <RotateCcw aria-hidden />
               {t('list.resetFilters', 'Reset')}
             </Button>
             <Button type="submit" size="sm" disabled={disabled}>
-              <Search className="mr-2 h-4 w-4" aria-hidden />
+              <Search aria-hidden />
               {t('list.searchFilters', 'Search')}
             </Button>
           </div>

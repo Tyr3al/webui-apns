@@ -5,6 +5,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { Server } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ClusterNodeInfo } from '../types/metrics';
 
@@ -30,7 +31,8 @@ export function NodeSelector({ nodes, value, onChange }: NodeSelectorProps) {
 
   return (
     <Select value={value === null ? ALL_NODES : String(value)} onValueChange={handleChange}>
-      <SelectTrigger className="w-44" aria-label={t('dashboard.node', 'Node')}>
+      <SelectTrigger variant="pill" aria-label={t('dashboard.node', 'Node')}>
+        <Server aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

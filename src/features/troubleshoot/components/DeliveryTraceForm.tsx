@@ -36,10 +36,10 @@ export function DeliveryTraceForm({ target, onTargetChange, starting, onStart }:
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 pt-8">
-      <div>
-        <h1 className="text-2xl font-bold">{t('deliveryTrace.title', 'Delivery Trace')}</h1>
-        <p className="mt-2 text-muted-foreground">
+    <div className="mx-auto max-w-2xl space-y-3.5 pt-6">
+      <div className="space-y-1 px-1 pb-1 pt-3">
+        <h1 className="page-title">{t('deliveryTrace.title', 'Delivery Trace')}</h1>
+        <p className="text-sm text-muted-foreground">
           {t(
             'deliveryTrace.subtitle',
             'Run a real outbound SMTP delivery attempt and watch every DNS lookup, TLS handshake, and SMTP command as it happens.',
@@ -47,7 +47,7 @@ export function DeliveryTraceForm({ target, onTargetChange, starting, onStart }:
         </p>
       </div>
       <Card>
-        <CardContent className="space-y-4 p-4">
+        <CardContent className="space-y-4 p-5">
           <form
             className="space-y-2"
             onSubmit={(e) => {
@@ -71,12 +71,8 @@ export function DeliveryTraceForm({ target, onTargetChange, starting, onStart }:
                 className="flex-1"
               />
               <Button type="submit" disabled={starting}>
-                {starting ? (
-                  <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Play aria-hidden="true" className="h-4 w-4" />
-                )}
-                <span className="ml-2">{t('deliveryTrace.startTrace', 'Start trace')}</span>
+                {starting ? <Loader2 aria-hidden="true" className="animate-spin" /> : <Play aria-hidden="true" />}
+                <span>{t('deliveryTrace.startTrace', 'Start trace')}</span>
               </Button>
             </div>
             {invalid && (

@@ -37,8 +37,7 @@ export function RowActions({ actions, label, hrefFor, onMutation, onLocked, disa
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
+          size="icon-sm"
           disabled={disabled}
           aria-label={t('list.actionsFor', 'Actions for {{label}}', { label })}
         >
@@ -52,7 +51,11 @@ export function RowActions({ actions, label, hrefFor, onMutation, onLocked, disa
             return (
               <DropdownMenuItem
                 key={entry.key}
-                className={entry.action.type === 'delete' ? 'text-destructive' : undefined}
+                className={
+                  entry.action.type === 'delete'
+                    ? 'text-destructive focus:bg-destructive-soft focus:text-destructive'
+                    : undefined
+                }
                 onSelect={() => onMutation(entry)}
               >
                 {entry.action.label}
@@ -63,7 +66,7 @@ export function RowActions({ actions, label, hrefFor, onMutation, onLocked, disa
             return (
               <DropdownMenuItem key={entry.key} onSelect={onLocked}>
                 {entry.label}
-                <Lock className="ml-auto h-3 w-3 text-muted-foreground" aria-hidden />
+                <Lock className="ml-auto h-3 w-3 text-dim" aria-hidden />
                 <span className="sr-only">
                   {t('enterprise.featureDisabled', 'This feature requires an Enterprise license.')}
                 </span>

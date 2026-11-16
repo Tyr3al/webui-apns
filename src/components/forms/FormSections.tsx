@@ -5,10 +5,10 @@
  */
 
 import type { ReactNode } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FieldRow } from '@/components/forms/FieldRow';
 import { VariantSelect } from '@/components/forms/VariantSelect';
 import type { EmbeddedVariant } from '@/lib/embeddedSchema';
+import { cn } from '@/lib/utils';
 import type { FieldErrors, FieldValues, RenderableSection } from '@/components/forms/formLogic';
 
 interface VariantControl {
@@ -19,6 +19,7 @@ interface VariantControl {
 
 interface FormSectionsProps {
   sections: RenderableSection[];
+  sectionId?: (key: string) => string;
   data: FieldValues;
   errors: FieldErrors;
   readOnly: boolean;
@@ -26,11 +27,19 @@ interface FormSectionsProps {
   variant?: VariantControl;
 }
 
-export function FormSections({ sections, data, errors, readOnly, onFieldChange, variant }: FormSectionsProps) {
+export function FormSections({
+  sections,
+  sectionId,
+  data,
+  errors,
+  readOnly,
+  onFieldChange,
+  variant,
+}: FormSectionsProps) {
   return (
     <>
       {sections.map((section) => (
-        <FormSectionCard key={section.key} title={section.title}>
+        <FormSectionCard key={section.key} id={sectionId?.(section.key)} title={section.title}>
           {section.fields.map(({ formField, field }) => {
             if (!field) {
               if (!variant) return null;
@@ -62,17 +71,15 @@ export function FormSections({ sections, data, errors, readOnly, onFieldChange, 
   );
 }
 
-export function FormSectionCard({ title, children }: { title?: string; children: ReactNode }) {
+export function FormSectionCard({ id, title, children }: { id?: string; title?: string; children: ReactNode }) {
   return (
-    <Card>
-      {title && (
-        <CardHeader>
-          <CardTitle className="text-base">{title}</CardTitle>
-        </CardHeader>
-      )}
-      <CardContent className={title ? '' : 'pt-6'}>
-        <div className="space-y-6">{children}</div>
-      </CardContent>
-    </Card>
+    <section
+      id={id}
+      tabIndex={id ? -1 : undefined}
+      className="tile @container scroll-mt-20 px-5 pb-1.5 outline-none sm:px-6"
+    >
+      {title && <h2 className="section-title pb-1 pt-5">{title}</h2>}
+      <div className={cn('divide-y divide-border', !title && 'pt-1')}>{children}</div>
+    </section>
   );
 }

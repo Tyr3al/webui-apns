@@ -4,33 +4,34 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
  */
 
-import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, Lock } from 'lucide-react';
+import { ChevronRight, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { DynamicIcon } from '@/components/common/DynamicIcon';
 import { EnterpriseUpsell } from '@/components/common/EnterpriseUpsell';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUIStore } from '@/stores/uiStore';
 import type { Layout } from '@/types/schema';
-import { layoutNavNodes, navNodeKey, pathMatchesView, someLink, viewPath, type NavNode } from './navTree';
+import { activeViewName, layoutNavNodes, navNodeKey, someLink, viewPath, type NavNode } from './navTree';
 import { SIDEBAR_ID, SidebarNavContext, useSidebarNav } from './sidebarContext';
 import { useLayoutNavigation } from './useLayoutNavigation';
 
-function indent(depth: number): CSSProperties | undefined {
-  return depth > 0 ? { paddingInlineStart: `${(depth + 1) * 12 + 8}px` } : undefined;
-}
+const itemClass =
+  'flex w-full items-center gap-2.5 rounded-[10px] px-2.5 text-left font-medium text-muted-foreground outline-none transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring';
 
-const itemClass = 'w-full justify-start gap-2 font-normal';
+function itemSize(depth: number) {
+  return depth > 0 ? 'h-8 text-[13px]' : 'h-9 text-sm';
+}
 
 function NavLink({ node, depth }: { node: Extract<NavNode, { kind: 'link' }>; depth: number }) {
   const { t } = useTranslation();
   const nav = useSidebarNav();
   const ref = useRef<HTMLAnchorElement>(null);
-  const isActive = pathMatchesView(nav.pathname, nav.sectionName, node.viewName);
+  const isActive = node.viewName === nav.activeViewName;
 
   useEffect(() => {
     if (isActive) ref.current?.scrollIntoView?.({ block: 'nearest' });
@@ -45,17 +46,11 @@ function NavLink({ node, depth }: { node: Extract<NavNode, { kind: 'link' }>; de
       <span className="truncate">{label}</span>
     </>
   );
-  const className = cn(buttonVariants({ variant: 'ghost' }), itemClass, depth > 0 && 'text-sm');
+  const className = cn(itemClass, itemSize(depth));
 
   if (nav.isLocked(node.viewName)) {
     return (
-      <button
-        type="button"
-        className={className}
-        style={indent(depth)}
-        onClick={nav.openUpsell}
-        aria-describedby={nav.lockedHintId}
-      >
+      <button type="button" className={className} onClick={nav.openUpsell} aria-describedby={nav.lockedHintId}>
         {content}
         <Lock aria-hidden="true" className="ml-auto h-3 w-3 text-muted-foreground" />
       </button>
@@ -67,8 +62,11 @@ function NavLink({ node, depth }: { node: Extract<NavNode, { kind: 'link' }>; de
       ref={ref}
       to={viewPath(nav.sectionName, node.viewName)}
       aria-current={isActive ? 'page' : undefined}
-      className={cn(className, isActive && 'bg-accent text-accent-foreground')}
-      style={indent(depth)}
+      className={cn(
+        className,
+        isActive &&
+          'bg-highlight font-semibold text-highlight-foreground hover:bg-highlight hover:text-highlight-foreground',
+      )}
     >
       {content}
     </Link>
@@ -77,9 +75,7 @@ function NavLink({ node, depth }: { node: Extract<NavNode, { kind: 'link' }>; de
 
 function NavContainer({ node, depth }: { node: Extract<NavNode, { kind: 'container' }>; depth: number }) {
   const nav = useSidebarNav();
-  const containsActive = someLink(node.children, (viewName) =>
-    pathMatchesView(nav.pathname, nav.sectionName, viewName),
-  );
+  const containsActive = someLink(node.children, (viewName) => viewName === nav.activeViewName);
   const [open, setOpen] = useState(containsActive);
   const [prevContainsActive, setPrevContainsActive] = useState(containsActive);
   if (containsActive !== prevContainsActive) {
@@ -92,25 +88,19 @@ function NavContainer({ node, depth }: { node: Extract<NavNode, { kind: 'contain
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
-        <Button variant="ghost" className={cn(itemClass, depth > 0 && 'text-sm')} style={indent(depth)}>
-          {depth > 0 && (
-            <ChevronDown
-              aria-hidden="true"
-              className="h-3 w-3 shrink-0 transition-transform duration-200 [[data-state=closed]>&]:rotate-[-90deg]"
-            />
-          )}
+        <button type="button" className={cn(itemClass, itemSize(depth))}>
           {node.icon && <DynamicIcon name={node.icon} className="h-4 w-4 shrink-0" />}
           <span className="truncate">{node.name}</span>
-          {depth === 0 && (
-            <ChevronDown
-              aria-hidden="true"
-              className="ml-auto h-3 w-3 shrink-0 transition-transform duration-200 [[data-state=closed]>&]:rotate-[-90deg]"
-            />
-          )}
-        </Button>
+          <ChevronRight
+            aria-hidden="true"
+            className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-200 [[data-state=open]>&]:rotate-90"
+          />
+        </button>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <NavNodes nodes={node.children} depth={depth + 1} />
+        <div className="my-0.5 ml-[18px] flex flex-col gap-0.5 border-l border-input pl-2">
+          <NavNodes nodes={node.children} depth={depth + 1} />
+        </div>
       </CollapsibleContent>
     </Collapsible>
   );
@@ -136,7 +126,7 @@ function SectionSwitcher({ layouts, activeSection }: { layouts: Layout[]; active
     <div
       role="group"
       aria-label={t('sections', 'Sections')}
-      className="flex items-center justify-around border-t bg-background px-2 py-2"
+      className="m-2.5 mt-0 flex items-center gap-0.5 rounded-full bg-muted p-1"
     >
       {layouts.map((target) => {
         const isActive = target.name === activeSection;
@@ -154,7 +144,10 @@ function SectionSwitcher({ layouts, activeSection }: { layouts: Layout[]; active
                   const path = landingPath(target);
                   if (path) navigate(path);
                 }}
-                className={cn('h-9 w-9', isActive && 'bg-accent text-accent-foreground')}
+                className={cn(
+                  'h-8 flex-1 rounded-full',
+                  isActive && 'bg-card text-foreground shadow-tile hover:bg-card hover:text-foreground',
+                )}
               >
                 <DynamicIcon name={target.icon} className="h-4 w-4" />
               </Button>
@@ -185,9 +178,11 @@ export function Sidebar() {
   const layout = layouts.find((l) => l.name === activeSection);
   if (!layout) return null;
 
+  const nodes = layoutNavNodes(layout);
   const nav = {
     sectionName: layout.name,
     pathname,
+    activeViewName: activeViewName(nodes, pathname, layout.name),
     isVisible,
     isLocked,
     openUpsell: () => setUpsellOpen(true),
@@ -198,21 +193,21 @@ export function Sidebar() {
     <>
       <div
         aria-hidden="true"
-        className="fixed inset-0 top-14 z-20 bg-black/40 md:hidden"
+        className="fixed inset-0 top-16 z-20 bg-overlay md:hidden"
         onClick={() => setSidebarOpen(false)}
       />
       <aside
         id={SIDEBAR_ID}
         aria-label={t('sidebar.label', 'Sidebar')}
-        className="fixed bottom-0 left-0 top-14 z-30 flex w-64 flex-col border-r bg-background"
+        className="fixed bottom-3 left-3 top-16 z-30 flex w-60 flex-col tile overflow-hidden"
       >
         <span id={lockedHintId} className="sr-only">
           {t('enterprise.featureHint', 'Enterprise feature')}
         </span>
-        <div className="flex-1 overflow-y-auto py-2 [scrollbar-width:thin]">
-          <nav aria-label={layout.name} className="flex flex-col gap-0.5 px-2">
+        <div className="flex-1 overflow-y-auto py-2.5 [scrollbar-width:thin]">
+          <nav aria-label={layout.name} className="flex flex-col gap-0.5 px-2.5">
             <SidebarNavContext value={nav}>
-              <NavNodes nodes={layoutNavNodes(layout)} depth={0} />
+              <NavNodes nodes={nodes} depth={0} />
             </SidebarNavContext>
           </nav>
         </div>

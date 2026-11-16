@@ -58,15 +58,16 @@ export function MultilineWidget(props: WidgetProps<FieldTypeString>) {
 
   if (type.format === 'html') {
     return (
-      <div className="rounded-md border bg-muted/30">
-        <div className="flex items-center gap-2 border-b px-3 py-1.5 text-xs text-muted-foreground">
+      <div className="field-surface overflow-hidden rounded-xl">
+        <div className="flex items-center gap-2 bg-muted px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-dim">
           <span className="font-mono">HTML</span>
         </div>
         <BufferedTextarea
           {...common}
           rows={10}
           spellCheck={false}
-          className="resize-y rounded-none rounded-b-md border-0 bg-transparent font-mono text-xs focus-visible:ring-0"
+          variant="bare"
+          className="resize-y font-mono text-xs"
         />
       </div>
     );
@@ -90,7 +91,7 @@ export function ColorWidget(props: WidgetProps<FieldTypeString>) {
         onChange={(e) => commit(e.target.value)}
         disabled={readOnly}
         aria-label={t('field.colorPicker', 'Color picker')}
-        className="h-9 w-14 cursor-pointer rounded-md border border-input bg-transparent p-1"
+        className="h-9 w-14 cursor-pointer field-surface rounded-full p-1 [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0"
       />
       <BufferedInput
         {...control}
@@ -138,14 +139,14 @@ export function SecretWidget(props: WidgetProps<FieldTypeString>) {
     <Button
       type="button"
       variant="ghost"
-      size="icon"
-      className="h-8 w-8 shrink-0"
+      size="icon-sm"
+      className="shrink-0"
       onClick={() => setVisible((p) => !p)}
       aria-label={visible ? t('field.hideValue', 'Hide value') : t('field.showValue', 'Show value')}
       aria-pressed={visible}
       tabIndex={-1}
     >
-      {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      {visible ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
     </Button>
   );
 

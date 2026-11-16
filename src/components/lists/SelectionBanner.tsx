@@ -24,11 +24,15 @@ export function SelectionBanner({
   onClear,
 }: SelectionBannerProps) {
   const { t } = useTranslation();
-  const linkClass = 'text-primary underline hover:text-primary/80';
+  const linkClass =
+    'font-semibold text-brand-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm';
 
   if (allMatching) {
     return (
-      <div role="status" className="rounded-md border border-primary/50 bg-primary/10 px-4 py-2 text-center text-sm">
+      <div
+        role="status"
+        className="border-t border-border first:border-t-0 bg-highlight/70 px-5 py-2.5 text-center text-[13px]"
+      >
         {t('list.allMatchingSelected', 'All {{total}} {{name}} matching the current filters are selected.', {
           total: total ?? 0,
           name: pluralName,
@@ -43,7 +47,10 @@ export function SelectionBanner({
   if (total === null || total <= pageCount) return null;
 
   return (
-    <div role="status" className="rounded-md border bg-muted/50 px-4 py-2 text-center text-sm">
+    <div
+      role="status"
+      className="border-t border-border first:border-t-0 bg-muted/60 px-5 py-2.5 text-center text-[13px]"
+    >
       {t('list.allPageSelected', 'All {{count}} items on this page are selected.', { count: pageCount })}{' '}
       <button type="button" className={linkClass} onClick={onSelectAllMatching}>
         {t('list.selectAllMatchingNamed', 'Select all {{total}} {{name}} matching the current filters', {

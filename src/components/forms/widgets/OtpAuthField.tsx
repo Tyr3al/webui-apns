@@ -133,7 +133,7 @@ export function OtpAuthField({ value, onChange, readOnly }: WidgetProps<FieldTyp
 
   if (!isConfigured && setupUrl) {
     return (
-      <div className="rounded-md border bg-muted/30 p-4 space-y-4">
+      <div className="space-y-4 rounded-xl bg-muted p-4">
         <div className="space-y-2">
           <p className="text-sm font-medium">{t('otp.scanPrompt', 'Scan with your authenticator app')}</p>
           <p className="text-xs text-muted-foreground">
@@ -150,11 +150,11 @@ export function OtpAuthField({ value, onChange, readOnly }: WidgetProps<FieldTyp
               alt={t('otp.qrCodeAlt', 'TOTP QR code')}
               width={220}
               height={220}
-              className="rounded-md border bg-white p-2"
+              className="rounded-xl bg-white p-2 shadow-tile"
             />
           ) : (
             <div className="flex h-[220px] w-[220px] items-center justify-center text-muted-foreground">
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <Loader2 className="h-6 w-6 animate-spin text-brand-text" aria-hidden="true" />
             </div>
           )}
         </div>
@@ -168,7 +168,9 @@ export function OtpAuthField({ value, onChange, readOnly }: WidgetProps<FieldTyp
               )}
             </p>
             <div className="flex gap-2">
-              <code className="flex-1 rounded bg-muted p-2 text-sm font-mono break-all select-all">{setupSecret}</code>
+              <code className="flex-1 select-all break-all rounded-lg bg-card px-3 py-2 font-mono text-sm">
+                {setupSecret}
+              </code>
               {setupTotp && <CopyButton value={setupTotp.secret.base32} label={t('otp.secret', 'secret')} />}
             </div>
           </div>
@@ -197,11 +199,11 @@ export function OtpAuthField({ value, onChange, readOnly }: WidgetProps<FieldTyp
           )}
         </div>
         <div className="flex items-center justify-end gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={cancelSetup}>
+          <Button type="button" variant="ghost" size="sm" onClick={cancelSetup}>
             {t('common.cancel', 'Cancel')}
           </Button>
           <Button type="button" size="sm" onClick={confirmSetup}>
-            <ShieldCheck className="mr-2 h-4 w-4" />
+            <ShieldCheck aria-hidden="true" />
             {t('common.confirm', 'Confirm')}
           </Button>
         </div>
@@ -215,8 +217,8 @@ export function OtpAuthField({ value, onChange, readOnly }: WidgetProps<FieldTyp
         <span className="text-sm text-muted-foreground">
           {t('otp.statusDisabled', 'Two-factor authentication is not enabled.')}
         </span>
-        <Button type="button" variant="outline" size="sm" onClick={startSetup}>
-          <ShieldCheck className="mr-2 h-4 w-4" />
+        <Button type="button" variant="secondary" size="sm" onClick={startSetup}>
+          <ShieldCheck aria-hidden="true" />
           {t('otp.setUp', 'Set up TOTP')}
         </Button>
       </div>
@@ -224,9 +226,11 @@ export function OtpAuthField({ value, onChange, readOnly }: WidgetProps<FieldTyp
   }
 
   return (
-    <div className="rounded-md border bg-muted/30 p-4 space-y-3">
+    <div className="space-y-3 rounded-xl bg-muted p-4">
       <div className="flex items-center gap-2">
-        <ShieldCheck className="h-4 w-4 text-green-600" />
+        <span className="grid size-7 place-items-center rounded-[9px] bg-success-soft text-success">
+          <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+        </span>
         <span className="text-sm font-medium">{t('otp.statusEnabled', 'Two-factor authentication is enabled.')}</span>
       </div>
       <p className="text-xs text-muted-foreground">
@@ -253,7 +257,7 @@ export function OtpAuthField({ value, onChange, readOnly }: WidgetProps<FieldTyp
       </div>
       <div className="flex items-center justify-end">
         <Button type="button" variant="destructive" size="sm" onClick={handleDisable} disabled={!otpCodeValue.trim()}>
-          <ShieldOff className="mr-2 h-4 w-4" />
+          <ShieldOff aria-hidden="true" />
           {t('otp.disable', 'Disable')}
         </Button>
       </div>

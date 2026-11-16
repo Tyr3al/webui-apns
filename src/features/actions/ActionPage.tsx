@@ -120,8 +120,8 @@ export function ActionPage({ viewName }: ActionPageProps) {
       );
     case 'submitting':
       return (
-        <div role="status" className="flex flex-col items-center justify-center gap-3 py-16">
-          <Loader2 aria-hidden="true" className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div role="status" className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-muted py-16">
+          <Loader2 aria-hidden="true" className="size-8 animate-spin text-brand-text" />
           <p className="text-muted-foreground">
             {t('actions.executing', 'Executing {{label}}...', { label: state.variant.label })}
           </p>

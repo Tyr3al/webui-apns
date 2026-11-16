@@ -10,7 +10,7 @@ import { useBufferedValue } from '@/hooks/useBufferedValue';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 import { X, Plus } from 'lucide-react';
 
@@ -98,12 +98,12 @@ export function ExpressionEditor({ value, onChange, readOnly = false, label, con
   };
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-3">
+    <div className="space-y-2.5 rounded-xl bg-muted p-3">
       {matchEntries.map(([key, entry], index) => (
         <div key={key}>
-          <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+          <div className="space-y-2 rounded-lg bg-card p-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground w-12 shrink-0">
+              <span className="w-12 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-dim">
                 {t('expression.if', 'IF')}
               </span>
               <BufferedExprInput
@@ -117,18 +117,18 @@ export function ExpressionEditor({ value, onChange, readOnly = false, label, con
               {!readOnly && (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                  variant="ghost-danger"
+                  size="icon-sm"
+                  className="shrink-0"
                   onClick={() => handleRemove(key)}
                   aria-label={t('expression.removeCondition', 'Remove condition {{n}}', { n: index + 1 })}
                 >
-                  <X className="h-4 w-4" />
+                  <X aria-hidden="true" />
                 </Button>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground w-12 shrink-0">
+              <span className="w-12 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-dim">
                 {t('expression.then', 'THEN')}
               </span>
               <BufferedExprInput
@@ -142,7 +142,6 @@ export function ExpressionEditor({ value, onChange, readOnly = false, label, con
               {!readOnly && <div className="w-8 shrink-0" />}
             </div>
           </div>
-          {index < matchEntries.length - 1 && <Separator className="my-3" />}
         </div>
       ))}
 
@@ -153,18 +152,17 @@ export function ExpressionEditor({ value, onChange, readOnly = false, label, con
             variant="ghost"
             size="sm"
             onClick={handleAdd}
-            className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+            className="h-7 gap-1 px-3 text-xs hover:bg-card"
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="!size-3.5" aria-hidden="true" />
             {t('expression.addCondition', 'Add condition')}
           </Button>
         </div>
       )}
 
-      {matchEntries.length > 0 && <Separator />}
-      <div className="flex items-center gap-2">
+      <div className={cn('flex items-center gap-2', matchEntries.length > 0 && 'border-t border-border pt-2.5')}>
         {matchEntries.length > 0 && (
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground w-12 shrink-0">
+          <span className="w-12 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-dim">
             {t('expression.else', 'ELSE')}
           </span>
         )}

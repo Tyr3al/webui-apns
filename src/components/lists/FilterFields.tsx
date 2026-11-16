@@ -34,7 +34,7 @@ function opField(filter: Filter): string {
 function LabelledField({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-xs font-medium text-muted-foreground">
+      <label htmlFor={id} className="text-[12.5px] font-semibold text-muted-foreground">
         {label}
       </label>
       {children}
@@ -46,7 +46,7 @@ function GroupField({ label, children }: { label: string; children: ReactNode })
   const labelId = useId();
   return (
     <div role="group" aria-labelledby={labelId} className="flex flex-col gap-1.5">
-      <span id={labelId} className="text-xs font-medium text-muted-foreground">
+      <span id={labelId} className="text-[12.5px] font-semibold text-muted-foreground">
         {label}
       </span>
       {children}

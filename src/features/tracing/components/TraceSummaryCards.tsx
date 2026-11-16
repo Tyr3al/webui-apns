@@ -7,7 +7,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Activity, Clock, FileText, Timer, type LucideIcon } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { formatDateTime, formatElapsed, formatNumber } from '@/lib/format';
 import { traceDurationMs } from '../format';
 import { useTraceLabels } from '../hooks/useTraceLabels';
@@ -15,14 +15,14 @@ import type { TraceEvent } from '../types';
 
 function SummaryCard({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Icon aria-hidden="true" className="h-4 w-4" />
-          {label}
-        </div>
-        <p className="mt-1 truncate text-lg font-semibold">{children}</p>
-      </CardContent>
+    <Card className="flex min-w-0 items-center gap-3 px-5 py-4">
+      <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-highlight text-highlight-foreground">
+        <Icon aria-hidden="true" className="size-[17px]" />
+      </span>
+      <div className="min-w-0">
+        <div className="text-[13px] font-medium text-muted-foreground">{label}</div>
+        <p className="truncate font-display text-lg font-bold tracking-[-0.012em]">{children}</p>
+      </div>
     </Card>
   );
 }
@@ -35,7 +35,7 @@ export function TraceSummaryCards({ events }: { events: TraceEvent[] }) {
   const durationMs = first && last && events.length >= 2 ? traceDurationMs(first.timestamp, last.timestamp) : null;
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
       <SummaryCard icon={FileText} label={t('tracing.spanType', 'Span Type')}>
         {first ? labels.event(first.event).label : '-'}
       </SummaryCard>

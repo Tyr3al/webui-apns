@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, RefreshCw } from 'lucide-react';
+import { Calendar, CalendarClock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
@@ -59,7 +59,8 @@ export function PeriodSelector({ onRefresh, loading }: PeriodSelectorProps) {
       <Popover open={customOpen} onOpenChange={setCustomOpen}>
         <PopoverAnchor>
           <Select value={currentValue} onValueChange={handleSelectChange}>
-            <SelectTrigger className="w-44" aria-label={t('dashboard.period', 'Period')}>
+            <SelectTrigger variant="pill" aria-label={t('dashboard.period', 'Period')}>
+              <CalendarClock aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -80,7 +81,7 @@ export function PeriodSelector({ onRefresh, loading }: PeriodSelectorProps) {
 
         <PopoverContent className="w-72 p-4" align="end">
           <div className="space-y-3">
-            <h4 className="text-sm font-medium">{t('dashboard.customRange', 'Custom range')}</h4>
+            <h4 className="section-title text-sm">{t('dashboard.customRange', 'Custom range')}</h4>
             <div className="space-y-2">
               <Label htmlFor="custom-from" className="text-xs">
                 {t('dashboard.from', 'From')}
@@ -115,10 +116,10 @@ export function PeriodSelector({ onRefresh, loading }: PeriodSelectorProps) {
         size="icon"
         onClick={onRefresh}
         disabled={loading}
-        className="h-9 w-9"
+        className="size-8"
         aria-label={t('dashboard.refresh', 'Refresh')}
       >
-        <RefreshCw aria-hidden="true" className={cn('h-4 w-4', loading && 'animate-spin')} />
+        <RefreshCw aria-hidden="true" className={cn('size-4', loading && 'animate-spin')} />
       </Button>
     </div>
   );

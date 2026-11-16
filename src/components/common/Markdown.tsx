@@ -19,7 +19,7 @@ export function Markdown({ source, className }: MarkdownProps) {
   return (
     <div
       className={cn(
-        '[&_a]:underline [&_code]:font-mono [&_ol]:list-decimal [&_ol]:pl-4 [&_p+p]:mt-1 [&_ul]:list-disc [&_ul]:pl-4',
+        '[&_a]:font-medium [&_a]:underline [&_a]:underline-offset-2 [&_code]:rounded [&_code]:bg-current/10 [&_code]:px-1 [&_code]:py-px [&_code]:font-mono [&_code]:text-[0.92em] [&_ol]:list-decimal [&_ol]:pl-4 [&_p+p]:mt-1 [&_ul]:list-disc [&_ul]:pl-4',
         className,
       )}
     >

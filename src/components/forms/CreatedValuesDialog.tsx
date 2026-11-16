@@ -48,16 +48,18 @@ export function CreatedValuesDialog({ values, labels, onContinue }: CreatedValue
             )}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
+        <div className="space-y-1 divide-y divide-border rounded-xl bg-muted px-4 py-1">
           {values &&
             Object.entries(values).map(([key, value]) => {
               const text = displayValue(value);
               const label = labels.get(key) ?? key;
               return (
-                <div key={key} className="flex flex-col gap-1">
-                  <span className="text-sm font-medium">{label}</span>
+                <div key={key} className="flex flex-col gap-1.5 py-3">
+                  <span className="text-[13px] font-semibold text-muted-foreground">{label}</span>
                   <div className="flex items-start gap-2">
-                    <code className="flex-1 rounded bg-muted p-2 text-sm break-all select-all">{text}</code>
+                    <code className="flex-1 select-all break-all rounded-lg bg-card px-3 py-2 font-mono text-sm">
+                      {text}
+                    </code>
                     <CopyButton value={text} label={label} />
                   </div>
                 </div>

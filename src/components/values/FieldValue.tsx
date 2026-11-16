@@ -8,6 +8,7 @@ import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { HelpTooltip } from '@/components/common/HelpTooltip';
 import { formatDateTime } from '@/lib/format';
@@ -124,11 +125,11 @@ function SetValue({
     );
   }
   return (
-    <span className="flex flex-wrap gap-1">
+    <span className="flex flex-wrap gap-1.5">
       {items.map((item) => {
         const color = itemType.type === 'enum' ? getEnumVariant(schema, itemType.enumName, item)?.color : undefined;
         return (
-          <Badge key={item} variant="secondary" className="gap-1 text-xs">
+          <Badge key={item} variant="secondary" className="h-6 gap-1.5 font-medium">
             {color && (
               <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
             )}
@@ -169,7 +170,7 @@ function MapValue({
     );
   }
   return (
-    <dl className="space-y-2">
+    <dl className="@container divide-y divide-border border-l-2 border-input pl-4">
       {entries.map(([key, val]) => (
         <ValueRow
           key={key}
@@ -205,7 +206,7 @@ function ObjectListValue({
     return <span>{t('value.itemCount', '{{count}} items', { count: entries.length })}</span>;
   }
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {entries.map(([key, item]) => (
         <ObjectValue key={key} schema={schema} objectName={objectName} value={item} />
       ))}
@@ -306,7 +307,7 @@ export function ObjectValue({
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground [&[data-state=open]>svg]:rotate-90"
+          className="-ml-1 flex items-center gap-1.5 rounded-md px-1 py-0.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&[data-state=open]>svg]:rotate-90"
         >
           <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" aria-hidden="true" />
           {typeLabel || summary.summary ? (
@@ -317,7 +318,7 @@ export function ObjectValue({
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <dl className="mt-2 ml-5 space-y-2 border-l-2 border-muted/40 pl-4">
+        <dl className="@container mt-1.5 ml-1.5 divide-y divide-border border-l-2 border-input pl-4">
           {entries.map((entry) => (
             <ValueRow
               key={entry.key}
@@ -361,8 +362,8 @@ export interface ValueRowProps {
 export function ValueRow({ schema, label, description, type, value }: ValueRowProps) {
   const block = isBlockValue(type, value);
   return (
-    <div className={block ? 'space-y-1' : 'flex items-baseline gap-2'}>
-      <dt className="flex min-w-[140px] shrink-0 items-center gap-1 text-sm text-muted-foreground">
+    <div data-slot="value-row" className={cn('py-3', block ? 'grid gap-y-1.5' : 'field-grid')}>
+      <dt className="flex min-w-0 items-center gap-1 text-[13px] font-medium text-muted-foreground">
         {label}
         {description && typeof label === 'string' && <HelpTooltip content={description} label={label} />}
       </dt>

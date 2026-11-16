@@ -5,6 +5,7 @@
  */
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import i18n from '@/i18n';
 
@@ -50,11 +51,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
 
       return (
-        <div role="alert" className="flex flex-col items-center justify-center gap-4 p-8">
-          <div className="text-destructive text-lg font-semibold">
-            {i18n.t('errorBoundary.title', 'Something went wrong')}
-          </div>
-          <p className="text-muted-foreground text-sm max-w-md text-center">
+        <div role="alert" className="mx-auto mt-6 flex max-w-lg flex-col items-center gap-4 tile p-8 text-center">
+          <span className="grid size-11 place-items-center rounded-[13px] bg-destructive-soft text-destructive">
+            <TriangleAlert className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div className="section-title text-lg">{i18n.t('errorBoundary.title', 'Something went wrong')}</div>
+          <p className="max-w-md text-sm text-muted-foreground">
             {this.state.error?.message ?? i18n.t('errors.unexpectedError', 'An unexpected error occurred.')}
           </p>
           <Button variant="outline" onClick={this.handleReset}>

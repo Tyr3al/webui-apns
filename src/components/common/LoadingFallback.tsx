@@ -11,9 +11,14 @@ import { cn } from '@/lib/utils';
 export function LoadingFallback({ fullScreen = false }: { fullScreen?: boolean }) {
   const { t } = useTranslation();
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-3', fullScreen ? 'min-h-screen' : 'p-8')}>
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p className="text-muted-foreground">{t('common.loading')}</p>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-3',
+        fullScreen ? 'min-h-screen bg-background' : 'p-8',
+      )}
+    >
+      <Loader2 className="h-7 w-7 animate-spin text-brand-text" aria-hidden="true" />
+      <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
     </div>
   );
 }

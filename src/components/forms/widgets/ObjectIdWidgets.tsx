@@ -6,7 +6,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
-import { ObjectSearchPopover } from '@/components/common/ObjectSearchPopover';
+import { ObjectFieldFrame, ObjectSearchPopover } from '@/components/common/ObjectSearchPopover';
 import { useNoPermissionMessage } from '@/lib/objectOptions';
 import { useObjectOptions, useDisplayName, type ObjectOption } from '@/data/objectOptions';
 import { useFormContext } from '@/components/forms/formContext';
@@ -52,30 +52,38 @@ export function ObjectIdWidget({
   const list = useObjectOptions(type.objectName, schema, tenantId);
   const noPermissionMessage = useNoPermissionMessage(schema, type.objectName);
 
+  const pill = id ? (
+    <ObjectIdPill
+      objectName={type.objectName}
+      id={id}
+      options={list.options}
+      onRemove={!readOnly && type.nullable ? () => onChange(null) : undefined}
+    />
+  ) : null;
+
+  if (readOnly) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {pill ?? <span className="text-sm text-dim">{t('field.none', 'None')}</span>}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {id && (
-        <ObjectIdPill
-          objectName={type.objectName}
-          id={id}
-          options={list.options}
-          onRemove={!readOnly && type.nullable ? () => onChange(null) : undefined}
-        />
-      )}
-      {!id && readOnly && <span className="text-sm text-muted-foreground">{t('field.none', 'None')}</span>}
-      {!readOnly && (
-        <ObjectSearchPopover
-          control={control}
-          label={t('field.chooseValue', 'Choose {{name}}', { name: formField.label })}
-          options={list.options}
-          loading={list.loading}
-          error={list.error}
-          ensureLoaded={list.ensureLoaded}
-          onSelect={(next) => onChange(next)}
-          disabledMessage={noPermissionMessage}
-        />
-      )}
-    </div>
+    <ObjectFieldFrame disabled={!!noPermissionMessage}>
+      {pill}
+      <ObjectSearchPopover
+        control={control}
+        label={t('field.chooseValue', 'Choose {{name}}', { name: formField.label })}
+        placeholder={id ? '' : t('field.selectEllipsis', 'Select...')}
+        options={list.options}
+        loading={list.loading}
+        error={list.error}
+        ensureLoaded={list.ensureLoaded}
+        onSelect={(next) => onChange(next)}
+        disabledMessage={noPermissionMessage}
+      />
+    </ObjectFieldFrame>
   );
 }
 
@@ -105,33 +113,40 @@ export function ObjectIdMultiSelect({
   const available = list.options.filter((o) => !items.includes(o.id));
   const atMinimum = minItems != null && items.length <= minItems;
 
+  const pills = items.map((id) => (
+    <ObjectIdPill
+      key={id}
+      objectName={objectName}
+      id={id}
+      options={list.options}
+      removeDisabled={atMinimum}
+      onRemove={readOnly ? undefined : () => onChange(items.filter((i) => i !== id))}
+    />
+  ));
+
+  if (readOnly) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {pills}
+        {items.length === 0 && <span className="text-sm text-dim">{t('field.none', 'None')}</span>}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {items.map((id) => (
-        <ObjectIdPill
-          key={id}
-          objectName={objectName}
-          id={id}
-          options={list.options}
-          removeDisabled={atMinimum}
-          onRemove={readOnly ? undefined : () => onChange(items.filter((i) => i !== id))}
-        />
-      ))}
-      {!readOnly && (
-        <ObjectSearchPopover
-          control={control}
-          label={t('field.addValue', 'Add {{name}}', { name: label })}
-          options={available}
-          loading={list.loading}
-          error={list.error}
-          ensureLoaded={list.ensureLoaded}
-          onSelect={(id) => onChange([...items, id])}
-          disabledMessage={noPermissionMessage}
-        />
-      )}
-      {items.length === 0 && readOnly && (
-        <span className="text-sm text-muted-foreground">{t('field.none', 'None')}</span>
-      )}
-    </div>
+    <ObjectFieldFrame disabled={!!noPermissionMessage}>
+      {pills}
+      <ObjectSearchPopover
+        control={control}
+        label={t('field.addValue', 'Add {{name}}', { name: label })}
+        placeholder={items.length === 0 ? t('field.selectEllipsis', 'Select...') : ''}
+        options={available}
+        loading={list.loading}
+        error={list.error}
+        ensureLoaded={list.ensureLoaded}
+        onSelect={(id) => onChange([...items, id])}
+        disabledMessage={noPermissionMessage}
+      />
+    </ObjectFieldFrame>
   );
 }

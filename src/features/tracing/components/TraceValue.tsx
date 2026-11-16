@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSchemaStore } from '@/stores/schemaStore';
 import { formatDateTime, formatElapsed, formatNumber } from '@/lib/format';
-import { intToBase32, isIdKey } from '../format';
+import { intToBase32, isIdKey, isPortKey } from '../format';
 import { useTraceLabels } from '../hooks/useTraceLabels';
 import type { TraceKeyValue, TraceValue } from '../types';
 
@@ -23,8 +23,10 @@ function TraceKeyValueRow({ kv, depth }: { kv: TraceKeyValue; depth: number }) {
   const labels = useTraceLabels();
   return (
     <div className="flex gap-2 text-sm" style={{ paddingInlineStart: depth * 16 }}>
-      <span className="min-w-24 shrink-0 pt-0.5 text-right text-xs text-muted-foreground">{labels.key(kv.key)}</span>
-      <span className="pt-0.5 text-xs">
+      <span className="min-w-24 shrink-0 pt-0.5 text-right text-xs font-medium text-muted-foreground">
+        {labels.key(kv.key)}
+      </span>
+      <span className="min-w-0 break-words pt-0.5 text-xs">
         <TraceValueDisplay keyName={kv.key} value={kv.value} depth={depth} />
       </span>
     </div>
@@ -36,7 +38,10 @@ function IdValue({ keyName, raw }: { keyName: string; raw: number | string }) {
   const encoded = intToBase32(raw);
   if (keyName === 'queueId') {
     return (
-      <Link to={`/${section}/x:QueuedMessage/${encoded}`} className="text-primary underline hover:no-underline">
+      <Link
+        to={`/${section}/x:QueuedMessage/${encoded}`}
+        className="font-mono text-brand-text underline underline-offset-2 hover:no-underline"
+      >
         {encoded}
       </Link>
     );
@@ -48,14 +53,14 @@ function NestedEvent({ event, value, depth }: { event: string; value: TraceKeyVa
   const labels = useTraceLabels();
   if (depth >= MAX_EVENT_DEPTH) {
     return (
-      <pre className="whitespace-pre-wrap rounded bg-muted/30 p-2 text-xs">
+      <pre className="whitespace-pre-wrap rounded-lg bg-muted-strong p-2.5 font-mono text-xs">
         {JSON.stringify({ event, values: value }, null, 2)}
       </pre>
     );
   }
   const { label, explanation } = labels.event(event);
   return (
-    <div className="mt-1 space-y-1 border-l-2 border-muted pl-3">
+    <div className="mt-1 space-y-1 border-l-2 border-input pl-3">
       <div className="text-xs font-semibold">{label}</div>
       {explanation && <div className="text-xs text-muted-foreground">{explanation}</div>}
       <TraceKeyValueList keyValues={value} depth={depth + 1} />
@@ -75,6 +80,7 @@ function TraceValueDisplay({ keyName, value, depth }: { keyName: string; value: 
       const numeric =
         raw && typeof raw === 'object' && 'source' in raw ? (raw as { source: string }).source : (raw as number);
       if (isIdKey(keyName)) return <IdValue keyName={keyName} raw={numeric} />;
+      if (isPortKey(keyName)) return <>{String(numeric)}</>;
       return <>{formatNumber(Number(numeric))}</>;
     }
     case 'Boolean':
@@ -109,7 +115,7 @@ function TraceValueDisplay({ keyName, value, depth }: { keyName: string; value: 
     case 'Event':
       return <NestedEvent event={value.event} value={value.value} depth={depth} />;
     case 'Null':
-      return <span className="text-muted-foreground">&mdash;</span>;
+      return <span className="text-dim">&mdash;</span>;
     default:
       return <>{JSON.stringify(value)}</>;
   }

@@ -41,19 +41,21 @@ export function DynamicViewPage({ viewName, objectId }: DynamicViewPageProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-brand-text" aria-hidden="true" />
       </div>
     );
   }
 
   if (error || !data || !schema) {
     return (
-      <div className="space-y-4">
+      <div className="mx-auto max-w-5xl space-y-5 pt-3">
         <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft aria-hidden="true" />
           {t('common.back', 'Back')}
         </Button>
-        <div className="text-destructive p-4">{error ?? t('view.failedToLoad', 'Failed to load')}</div>
+        <div className="rounded-xl bg-destructive-soft p-4 text-sm text-destructive" role="alert">
+          {error ?? t('view.failedToLoad', 'Failed to load')}
+        </div>
       </div>
     );
   }
@@ -71,13 +73,18 @@ export function DynamicViewPage({ viewName, objectId }: DynamicViewPageProps) {
     : singularName.charAt(0).toUpperCase() + singularName.slice(1);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('common.back', 'Back')}
+    <div className="mx-auto max-w-5xl space-y-5">
+      <div className="flex items-start gap-3.5 px-1 pb-1 pt-3">
+        <Button
+          variant="outline"
+          size="icon-lg"
+          className="shrink-0"
+          onClick={() => navigate(-1)}
+          aria-label={t('common.back', 'Back')}
+        >
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         </Button>
-        <h1 className="text-xl font-semibold">{title}</h1>
+        <h1 className="page-title min-w-0 flex-1 break-words pt-1.5">{title}</h1>
       </div>
 
       <DynamicView schema={schema} objectName={resolved.objectName} viewName={viewName} data={data} />

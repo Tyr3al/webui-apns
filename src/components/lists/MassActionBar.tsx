@@ -5,9 +5,10 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { ChevronUp, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { FloatingActionBar, FloatingActionDivider, FloatingActionDot } from '@/components/common/FloatingActionBar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,33 +25,47 @@ interface MassActionBarProps {
   count: number;
   disabled: boolean;
   onSelect: (action: RunnableMassAction) => void;
+  onClear: () => void;
 }
 
-export function MassActionBar({ actions, count, disabled, onSelect }: MassActionBarProps) {
+export function MassActionBar({ actions, count, disabled, onSelect, onClear }: MassActionBarProps) {
   const { t } = useTranslation();
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled}>
-          {t('list.massActionCount', 'Actions ({{count}})', { count })}
-          <ChevronDown className="ml-1 h-4 w-4" aria-hidden />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {actions.map(({ key, action }) =>
-          action.type === 'separator' ? (
-            <DropdownMenuSeparator key={key} />
-          ) : (
-            <DropdownMenuItem
-              key={key}
-              className={action.type === 'delete' ? 'text-destructive' : undefined}
-              onSelect={() => onSelect(action)}
-            >
-              {action.label}
-            </DropdownMenuItem>
-          ),
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <FloatingActionBar>
+      <span className="pl-2">
+        <FloatingActionDot />
+      </span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ink" size="sm" className="text-ink-foreground" disabled={disabled}>
+            {t('list.massActionCount', 'Actions ({{count}})', { count })}
+            <ChevronUp aria-hidden />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="center" side="top" sideOffset={10}>
+          {actions.map(({ key, action }) =>
+            action.type === 'separator' ? (
+              <DropdownMenuSeparator key={key} />
+            ) : (
+              <DropdownMenuItem
+                key={key}
+                className={
+                  action.type === 'delete'
+                    ? 'text-destructive focus:bg-destructive-soft focus:text-destructive'
+                    : undefined
+                }
+                onSelect={() => onSelect(action)}
+              >
+                {action.label}
+              </DropdownMenuItem>
+            ),
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <FloatingActionDivider />
+      <Button variant="ink" size="icon-sm" onClick={onClear} aria-label={t('list.clearSelection', 'Clear selection')}>
+        <X aria-hidden />
+      </Button>
+    </FloatingActionBar>
   );
 }

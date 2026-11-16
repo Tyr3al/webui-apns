@@ -48,7 +48,7 @@ export function RateWidget({ type, value, onChange, readOnly, control }: WidgetP
   };
 
   if (readOnly) {
-    if (isNull) return <span className="text-sm italic text-muted-foreground">{t('field.notSet', 'Not set')}</span>;
+    if (isNull) return <span className="text-sm italic text-dim">{t('field.notSet', 'Not set')}</span>;
     return (
       <span className="text-sm">
         {t('rate.summary', '{{amount}} per {{period}}', {
@@ -62,15 +62,15 @@ export function RateWidget({ type, value, onChange, readOnly, control }: WidgetP
   if (isNull) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm italic text-muted-foreground">{t('field.notSet', 'Not set')}</span>
+        <span className="text-sm italic text-dim">{t('field.notSet', 'Not set')}</span>
         <Button
           {...control}
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => onChange({ count: 1, period: 1000 })}
         >
-          <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
+          <Plus aria-hidden="true" />
           {t('field.enable', 'Enable')}
         </Button>
       </div>
@@ -128,7 +128,7 @@ export function RateWidget({ type, value, onChange, readOnly, control }: WidgetP
           onClick={() => onChange(null)}
           aria-label={t('common.clear', 'Clear')}
         >
-          <X className="h-4 w-4" />
+          <X aria-hidden="true" />
         </Button>
       )}
     </div>

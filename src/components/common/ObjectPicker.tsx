@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, X } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { ObjectSearchPopover } from '@/components/common/ObjectSearchPopover';
+import { ObjectFieldFrame, ObjectSearchPopover } from '@/components/common/ObjectSearchPopover';
 import { useNoPermissionMessage } from '@/lib/objectOptions';
 import { useObjectOptions, useDisplayName } from '@/data/objectOptions';
 import type { Schema } from '@/types/schema';
@@ -36,11 +36,11 @@ export function ObjectPicker({ schema, objectName, label, value, onChange, onCle
   const noPermissionMessage = useNoPermissionMessage(schema, objectName);
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <ObjectFieldFrame disabled={!!noPermissionMessage}>
       {value && (
-        <Badge variant="secondary" className="gap-1 pr-1.5 text-sm max-w-xs">
+        <Badge variant="secondary" className="h-7 max-w-xs gap-1 pl-3 pr-1 text-[13px] font-medium">
           {labelLoading ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
           ) : (
             <span className="truncate" title={display ?? value}>
               {display ?? value}
@@ -50,17 +50,17 @@ export function ObjectPicker({ schema, objectName, label, value, onChange, onCle
             <button
               type="button"
               onClick={onClear}
-              className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
+              className="grid size-5 shrink-0 place-items-center rounded-full bg-card text-muted-foreground transition-colors hover:bg-highlight hover:text-highlight-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={t('field.clearValue', 'Clear {{name}}', { name: label })}
             >
-              <X className="h-3 w-3" />
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
           )}
         </Badge>
       )}
-      {!value && placeholder && <span className="text-sm text-muted-foreground">{placeholder}</span>}
       <ObjectSearchPopover
         label={t('field.chooseValue', 'Choose {{name}}', { name: label })}
+        placeholder={value ? '' : (placeholder ?? t('field.selectEllipsis', 'Select...'))}
         options={list.options}
         loading={list.loading}
         error={list.error}
@@ -68,6 +68,6 @@ export function ObjectPicker({ schema, objectName, label, value, onChange, onCle
         onSelect={onChange}
         disabledMessage={noPermissionMessage}
       />
-    </div>
+    </ObjectFieldFrame>
   );
 }

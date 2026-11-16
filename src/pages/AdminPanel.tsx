@@ -167,7 +167,7 @@ export default function AdminPanel() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div role="alert" className="text-center">
-          <h1 className="text-xl font-semibold text-destructive">{t('errors.loadSchemaFailed')}</h1>
+          <h1 className="page-title text-destructive">{t('errors.loadSchemaFailed')}</h1>
           <p className="mt-2 text-muted-foreground">{errorMessage(init.error)}</p>
           <Button className="mt-4" onClick={() => void init.refetch()} disabled={init.isFetching}>
             {t('common.retry', 'Retry')}
@@ -195,7 +195,7 @@ export default function AdminPanel() {
       <div className="flex flex-1">
         <Sidebar />
         <main
-          className={`flex-1 overflow-auto bg-content-background p-6 transition-[margin] ${sidebarOpen ? 'md:ml-64' : ''}`}
+          className={`min-w-0 flex-1 px-3 pb-28 pt-2 transition-[margin] sm:px-5 ${sidebarOpen ? 'md:ml-[252px]' : ''}`}
         >
           <ErrorBoundary key={activeAccountId ?? 'none'}>
             <MainContent viewName={viewName} id={id} section={section} />

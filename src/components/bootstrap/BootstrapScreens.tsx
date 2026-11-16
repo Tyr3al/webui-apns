@@ -7,18 +7,18 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { CopyButton } from '@/components/common/CopyButton';
 import { DefaultLogo } from '@/components/common/Logo';
 import type { Fields } from '@/types/schema';
 
 export function WizardShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-content-background">
-      <header className="flex items-center px-6 py-4 border-b bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-20 flex h-16 items-center bg-background/80 px-6 backdrop-blur-md">
         <DefaultLogo />
       </header>
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto px-4 pb-10 pt-4 sm:px-6">
         <div className="mx-auto max-w-3xl">{children}</div>
       </main>
     </div>
@@ -29,15 +29,16 @@ export function ProgressIndicator({ total, current }: { total: number; current: 
   const { t } = useTranslation();
   return (
     <div
-      className="flex items-center gap-2"
+      className="flex items-center gap-1.5"
       aria-label={t('bootstrap.stepOf', 'Step {{current}} of {{total}}', { current: current + 1, total })}
     >
       {Array.from({ length: total }, (_, i) => (
         <div
           key={i}
-          className={`h-2 w-2 rounded-full transition-colors ${
-            i < current ? 'bg-primary' : i === current ? 'bg-primary' : 'bg-muted-foreground/20'
-          }`}
+          className={cn(
+            'h-1.5 rounded-full transition-all duration-300 ease-bento',
+            i === current ? 'w-8 bg-primary' : i < current ? 'w-4 bg-primary/45' : 'w-4 bg-muted-strong',
+          )}
         />
       ))}
     </div>
@@ -62,14 +63,14 @@ export function SuccessScreen({
   const hasCredentials = entries.length > 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col items-start gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-          <Check className="h-5 w-5 text-primary" />
-        </div>
+    <div className="space-y-3.5">
+      <div className="flex flex-col items-start gap-4 px-1 pb-2 pt-3">
+        <span className="grid size-11 place-items-center rounded-[13px] bg-success-soft text-success">
+          <Check className="h-5 w-5" aria-hidden="true" />
+        </span>
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">{t('bootstrap.complete', 'Setup complete')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="page-title">{t('bootstrap.complete', 'Setup complete')}</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
             {hasCredentials
               ? t(
                   'bootstrap.credentialsCreated',
@@ -81,32 +82,37 @@ export function SuccessScreen({
       </div>
 
       {hasCredentials && (
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            {entries.map(([key, value]) => {
-              const field = fields.properties[key];
-              const label = labelsByName.get(key) ?? field?.description?.split('\n')[0] ?? key;
-              return (
-                <div key={key} className="space-y-1.5">
-                  <div className="text-sm font-medium">{label}</div>
-                  <div className="flex gap-2">
-                    <code className="flex-1 rounded bg-muted p-2 text-sm break-all select-all">{value}</code>
-                    <CopyButton value={value} label={label} />
-                  </div>
+        <section className="tile divide-y divide-border px-5 sm:px-6">
+          {entries.map(([key, value]) => {
+            const field = fields.properties[key];
+            const label = labelsByName.get(key) ?? field?.description?.split('\n')[0] ?? key;
+            return (
+              <div key={key} className="space-y-2 py-4">
+                <div className="text-[13.5px] font-semibold">{label}</div>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 select-all break-all rounded-xl bg-muted px-3 py-2.5 font-mono text-sm">
+                    {value}
+                  </code>
+                  <CopyButton value={value} label={label} />
                 </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+              </div>
+            );
+          })}
+        </section>
       )}
 
-      <div className="rounded-md border border-primary/20 bg-primary/5 p-4">
+      <div className="rounded-xl bg-info-soft p-4 text-info">
         <p className="text-sm">
           <span className="font-medium">{t('bootstrap.nextStepLabel', 'Next step:')}</span>{' '}
-          {t(
-            'bootstrap.nextStepBody',
-            'restart Stalwart for the new configuration to take effect. Once restarted, sign in with the credentials above to continue administering your server.',
-          )}
+          {hasCredentials
+            ? t(
+                'bootstrap.nextStepBody',
+                'restart Stalwart for the new configuration to take effect. Once restarted, sign in with the credentials above to continue administering your server.',
+              )
+            : t(
+                'bootstrap.nextStepBodyNoCredentials',
+                'restart Stalwart for the new configuration to take effect. No administrator account was created because accounts come from the external directory. Once restarted, sign in with the recovery administrator set in STALWART_RECOVERY_ADMIN and assign an administrator role to a directory account.',
+              )}
         </p>
       </div>
     </div>

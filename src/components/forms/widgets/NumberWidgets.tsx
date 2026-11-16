@@ -143,7 +143,7 @@ function UnitNumberWidget({
           onClick={() => onChange(null)}
           aria-label={t('common.clear', 'Clear')}
         >
-          <X className="h-4 w-4" />
+          <X aria-hidden="true" />
         </Button>
       )}
     </div>

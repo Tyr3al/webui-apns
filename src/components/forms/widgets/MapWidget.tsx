@@ -4,22 +4,24 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-SEL
  */
 
-import { useState, type KeyboardEvent } from 'react';
+import { useId, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Loader2, Plus, X } from 'lucide-react';
+import { ChevronRight, Loader2, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ObjectSearchPopover } from '@/components/common/ObjectSearchPopover';
 import { FieldScopeProvider } from '@/components/forms/FormProvider';
-import { useFormContext } from '@/components/forms/formContext';
+import { PanelContext, useFormContext, useInPanel } from '@/components/forms/formContext';
 import { FieldControl } from '@/components/forms/widgets/FieldControl';
+import { EmbeddedObjectEditor } from '@/components/forms/widgets/EmbeddedObjectWidget';
 import { formatPlaceholder } from '@/components/forms/widgets/placeholders';
+import { widgetKey } from '@/components/forms/widgets/registry';
 import { useNoPermissionMessage } from '@/lib/objectOptions';
 import { useDisplayName, useObjectOptions } from '@/data/objectOptions';
 import { buildNewObjectValue, getEnum, getEnumVariant } from '@/lib/schemaResolver';
 import { isRecord } from '@/lib/embeddedSchema';
+import { cn } from '@/lib/utils';
 import type { WidgetProps } from '@/components/forms/widgets/types';
 import type { Field, FieldType, FieldTypeMap, MapValueType, ScalarType } from '@/types/schema';
 
@@ -37,6 +39,8 @@ function defaultMapValue(valueClass: MapValueType, newObject: (objectName: strin
 export function MapWidget({ type, formField, value, onChange, readOnly }: WidgetProps<FieldTypeMap>) {
   const { t } = useTranslation();
   const { schema } = useFormContext();
+  const inPanel = useInPanel();
+  const baseId = useId();
   const map = isRecord(value) ? value : {};
   const entries = Object.entries(map);
   const [newKey, setNewKey] = useState('');
@@ -78,77 +82,133 @@ export function MapWidget({ type, formField, value, onChange, readOnly }: Widget
     }
   };
 
+  const objectValues = valueField.type.type === 'object' && widgetKey(valueField.type) !== 'object:x:Rate';
+  const valueLabel = formField.valueLabel ?? '';
+  const removeButton = (key: string) =>
+    !readOnly && (
+      <Button
+        type="button"
+        variant="ghost-danger"
+        size="icon-sm"
+        className="shrink-0"
+        onClick={() => removeEntry(key)}
+        disabled={!canRemove}
+        aria-label={t('field.removeEntry', 'Remove entry {{name}}', { name: key })}
+      >
+        <Trash2 className="h-4 w-4" aria-hidden="true" />
+      </Button>
+    );
+  const valueControl = (key: string, val: unknown) => (
+    <FieldScopeProvider name={key} readOnly={readOnly}>
+      {valueField.type.type === 'object' && widgetKey(valueField.type) === 'object' ? (
+        <EmbeddedObjectEditor
+          bare
+          objectName={valueField.type.objectName}
+          control={{ 'aria-label': valueLabel || key }}
+          value={val}
+          onChange={(v) => onChange({ ...map, [key]: v })}
+          readOnly={readOnly}
+        />
+      ) : (
+        <FieldControl
+          type={valueField.type}
+          field={valueField}
+          formField={{ name: key, label: valueLabel }}
+          value={val}
+          onChange={(v) => onChange({ ...map, [key]: v })}
+          readOnly={readOnly}
+          control={{ 'aria-label': valueLabel || key }}
+        />
+      )}
+    </FieldScopeProvider>
+  );
+
   return (
-    <div className="space-y-3">
-      {entries.map(([key, val]) => (
-        <Collapsible key={key} open={expanded.has(key)} onOpenChange={(open) => setOpen(key, open)}>
-          <div className="rounded-md border">
-            <div className="flex items-center">
-              <CollapsibleTrigger asChild>
+    <PanelContext value={true}>
+      <div
+        data-slot="map-widget"
+        className={cn('space-y-0.5 rounded-xl p-1.5', inPanel ? 'bg-card shadow-tile' : 'bg-muted')}
+      >
+        {!objectValues && entries.length > 0 && (formField.keyLabel || formField.valueLabel) && (
+          <div
+            aria-hidden="true"
+            className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_2rem] gap-3 px-3 pb-0.5 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-dim"
+          >
+            <span>{formField.keyLabel}</span>
+            <span>{formField.valueLabel}</span>
+          </div>
+        )}
+        {entries.map(([key, val]) =>
+          objectValues ? (
+            <div key={key} className={cn('rounded-lg', expanded.has(key) && (inPanel ? 'bg-muted' : 'bg-card'))}>
+              <div className="flex items-center gap-1 pr-1">
                 <button
                   type="button"
-                  className="flex flex-1 items-center gap-2 rounded-t-md p-3 text-sm font-medium transition-colors hover:bg-accent/50 [&[data-state=open]>svg]:rotate-90"
+                  onClick={() => setOpen(key, !expanded.has(key))}
+                  aria-expanded={expanded.has(key)}
+                  aria-controls={`${baseId}-${key}`}
+                  className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200" aria-hidden="true" />
-                  <MapKeyLabel keyClass={type.keyClass} keyValue={key} />
+                  <ChevronRight
+                    className={cn(
+                      'h-4 w-4 shrink-0 text-dim transition-transform duration-200',
+                      expanded.has(key) && 'rotate-90',
+                    )}
+                    aria-hidden="true"
+                  />
+                  <span className="truncate">
+                    <MapKeyLabel keyClass={type.keyClass} keyValue={key} />
+                  </span>
                 </button>
-              </CollapsibleTrigger>
-              {!readOnly && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="mr-2 h-7 w-7 shrink-0"
-                  onClick={() => removeEntry(key)}
-                  disabled={!canRemove}
-                  aria-label={t('field.removeEntry', 'Remove entry {{name}}', { name: key })}
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </Button>
+                {removeButton(key)}
+              </div>
+              {expanded.has(key) && (
+                <div id={`${baseId}-${key}`} className="border-t border-border px-4">
+                  {valueControl(key, val)}
+                </div>
               )}
             </div>
-            <CollapsibleContent>
-              <div className="px-4 pb-4 pt-1">
-                <FieldScopeProvider name={key} readOnly={readOnly}>
-                  <FieldControl
-                    type={valueField.type}
-                    field={valueField}
-                    formField={{ name: key, label: formField.valueLabel ?? '' }}
-                    value={val}
-                    onChange={(v) => onChange({ ...map, [key]: v })}
-                    readOnly={readOnly}
-                    control={{ 'aria-label': formField.valueLabel ?? key }}
-                  />
-                </FieldScopeProvider>
-              </div>
-            </CollapsibleContent>
+          ) : (
+            <div
+              key={key}
+              className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_2rem] items-center gap-3 rounded-lg py-1 pl-3 transition-colors hover:bg-muted-strong/60"
+            >
+              <span className="truncate text-sm font-medium">
+                <MapKeyLabel keyClass={type.keyClass} keyValue={key} />
+              </span>
+              <div className="min-w-0">{valueControl(key, val)}</div>
+              {removeButton(key)}
+            </div>
+          ),
+        )}
+        {!readOnly && canAdd && (
+          <div className="flex items-center gap-2 p-1">
+            <MapKeyInput
+              keyClass={type.keyClass}
+              label={formField.keyLabel ?? t('field.newKey', 'New key')}
+              value={newKey}
+              onChange={setNewKey}
+              onKeyDown={handleKeyDown}
+              existingKeys={map}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addEntry}
+              disabled={!trimmedKey || Object.hasOwn(map, trimmedKey)}
+              className="shrink-0"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              {t('field.add', 'Add')}
+            </Button>
           </div>
-        </Collapsible>
-      ))}
-      {!readOnly && canAdd && (
-        <div className="flex items-center gap-2">
-          <MapKeyInput
-            keyClass={type.keyClass}
-            label={formField.keyLabel ?? t('field.newKey', 'New key')}
-            value={newKey}
-            onChange={setNewKey}
-            onKeyDown={handleKeyDown}
-            existingKeys={map}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addEntry}
-            disabled={!trimmedKey || Object.hasOwn(map, trimmedKey)}
-            className="shrink-0 gap-1"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            {t('field.add', 'Add')}
-          </Button>
-        </div>
-      )}
-    </div>
+        )}
+        {readOnly && entries.length === 0 && (
+          <p className="px-2.5 py-2 text-sm text-muted-foreground">{t('field.none', 'None')}</p>
+        )}
+      </div>
+    </PanelContext>
   );
 }
 

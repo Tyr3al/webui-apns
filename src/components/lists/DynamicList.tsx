@@ -197,103 +197,105 @@ function DynamicListView({ viewName, schema, resolved, list }: DynamicListViewPr
   const viewFor = (name: string) => layoutViewFor(schema, viewToSection, name, viewName);
 
   return (
-    <div className="relative space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{list.title}</h1>
+    <div className="space-y-3.5">
+      <div className="flex flex-wrap items-end justify-between gap-4 px-1 pb-1 pt-3">
+        <div className="min-w-0">
+          <h1 className="page-title">{list.title}</h1>
           {list.subtitle && <p className="mt-1 text-sm text-muted-foreground">{list.subtitle}</p>}
         </div>
-        <div className="flex items-center gap-2">
-          {massActions.length > 0 && selectedCount > 0 && (
-            <MassActionBar
-              actions={massActions}
-              count={selectedCount}
-              disabled={actions.pending}
-              onSelect={confirmMassAction}
-            />
-          )}
-          {canCreate && section && (
-            <Button onClick={() => navigate(`/${section}/${viewName}/new`)}>
-              <Plus className="mr-2 h-4 w-4" aria-hidden />
-              {t('list.create', 'Create {{name}}', { name: list.singularName })}
-            </Button>
-          )}
-        </div>
+        {canCreate && section && (
+          <Button onClick={() => navigate(`/${section}/${viewName}/new`)}>
+            <Plus aria-hidden />
+            {t('list.create', 'Create {{name}}', { name: list.singularName })}
+          </Button>
+        )}
       </div>
-
-      {visibleFilters.length > 0 && (
-        <FilterBar
-          schema={schema}
-          filters={visibleFilters}
-          applied={state.filters}
-          isXPrefixed={objectName.startsWith('x:')}
-          disabled={listState.isFetching}
-          onApply={listState.applyFilters}
-          onReset={listState.resetFilters}
-        />
-      )}
 
       {listState.error && <ListError message={listState.error} onRetry={listState.refetch} />}
       {actions.error && <ListError message={actions.error} onDismiss={actions.clearError} />}
 
-      {massActions.length > 0 && selection.pageState === 'all' && (
-        <SelectionBanner
-          allMatching={selection.allMatching}
-          pageCount={selection.selectedIds.length}
-          total={total}
-          pluralName={list.pluralName}
-          onSelectAllMatching={selection.selectAllMatching}
+      <section className="tile relative overflow-hidden">
+        {visibleFilters.length > 0 && (
+          <FilterBar
+            schema={schema}
+            filters={visibleFilters}
+            applied={state.filters}
+            isXPrefixed={objectName.startsWith('x:')}
+            disabled={listState.isFetching}
+            onApply={listState.applyFilters}
+            onReset={listState.resetFilters}
+          />
+        )}
+
+        {massActions.length > 0 && selection.pageState === 'all' && (
+          <SelectionBanner
+            allMatching={selection.allMatching}
+            pageCount={selection.selectedIds.length}
+            total={total}
+            pluralName={list.pluralName}
+            onSelectAllMatching={selection.selectAllMatching}
+            onClear={selection.clear}
+          />
+        )}
+
+        <ListTable
+          caption={list.title}
+          columns={list.columns}
+          fields={fields}
+          items={items}
+          schema={schema}
+          objectName={objectName}
+          sort={state.sort}
+          sortable={new Set(list.sort ?? [])}
+          onSort={listState.toggleSort}
+          selection={massActions.length > 0 ? selection : null}
+          rowHref={(id) => (section ? `/${section}/${viewName}/${id}` : null)}
+          rowLabel={(item) => itemLabel(item, labelProperty)}
+          renderRowActions={
+            itemActions.length > 0
+              ? (_item, id, label) => (
+                  <RowActions
+                    actions={itemActions}
+                    label={label}
+                    hrefFor={(action) => itemActionHref(action, id, sectionFor, section, viewFor)}
+                    onMutation={(entry) => confirmItemAction(entry, id, label)}
+                    onLocked={() => setUpsellOpen(true)}
+                    disabled={actions.pending}
+                  />
+                )
+              : null
+          }
+          loading={listState.isLoading}
+          busy={busy}
+        />
+
+        {(items.length > 0 || state.anchors.length > 0) && (
+          <Pagination
+            range={listState.range}
+            total={total}
+            count={items.length}
+            pluralName={list.pluralName}
+            disabled={listState.isFetching}
+            onPrev={listState.prevPage}
+            onNext={listState.nextPage}
+          />
+        )}
+
+        {busy && items.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-card/50" aria-hidden>
+            <Loader2 className="h-6 w-6 animate-spin text-brand-text" />
+          </div>
+        )}
+      </section>
+
+      {massActions.length > 0 && selectedCount > 0 && (
+        <MassActionBar
+          actions={massActions}
+          count={selectedCount}
+          disabled={actions.pending}
+          onSelect={confirmMassAction}
           onClear={selection.clear}
         />
-      )}
-
-      <ListTable
-        caption={list.title}
-        columns={list.columns}
-        fields={fields}
-        items={items}
-        schema={schema}
-        objectName={objectName}
-        sort={state.sort}
-        sortable={new Set(list.sort ?? [])}
-        onSort={listState.toggleSort}
-        selection={massActions.length > 0 ? selection : null}
-        rowHref={(id) => (section ? `/${section}/${viewName}/${id}` : null)}
-        rowLabel={(item) => itemLabel(item, labelProperty)}
-        renderRowActions={
-          itemActions.length > 0
-            ? (_item, id, label) => (
-                <RowActions
-                  actions={itemActions}
-                  label={label}
-                  hrefFor={(action) => itemActionHref(action, id, sectionFor, section, viewFor)}
-                  onMutation={(entry) => confirmItemAction(entry, id, label)}
-                  onLocked={() => setUpsellOpen(true)}
-                  disabled={actions.pending}
-                />
-              )
-            : null
-        }
-        loading={listState.isLoading}
-        busy={busy}
-      />
-
-      {(items.length > 0 || state.anchors.length > 0) && (
-        <Pagination
-          range={listState.range}
-          total={total}
-          count={items.length}
-          pluralName={list.pluralName}
-          disabled={listState.isFetching}
-          onPrev={listState.prevPage}
-          onNext={listState.nextPage}
-        />
-      )}
-
-      {busy && items.length > 0 && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/50" aria-hidden>
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </div>
       )}
 
       <ConfirmDialog

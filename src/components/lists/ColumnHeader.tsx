@@ -10,6 +10,9 @@ import { ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Column } from '@/types/schema';
 import type { ListSort } from './listUrlState';
 
+export const HEADER_CELL =
+  'px-3.5 py-2.5 first:pl-5 last:pr-5 text-left text-[11px] font-semibold uppercase tracking-wider text-dim';
+
 interface ColumnHeaderProps {
   column: Column;
   sortable: boolean;
@@ -20,7 +23,7 @@ interface ColumnHeaderProps {
 export function ColumnHeader({ column, sortable, sort, onSort }: ColumnHeaderProps) {
   const { t } = useTranslation();
   const direction = sort?.field === column.name ? (sort.ascending ? 'ascending' : 'descending') : 'none';
-  const className = 'px-3 py-3 text-left font-medium text-muted-foreground';
+  const className = HEADER_CELL;
 
   if (!sortable) {
     return (
@@ -43,13 +46,13 @@ export function ColumnHeader({ column, sortable, sort, onSort }: ColumnHeaderPro
         type="button"
         onClick={() => onSort(column.name)}
         title={hint}
-        className="-mx-1 inline-flex items-center gap-1 rounded px-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-mx-1 inline-flex items-center gap-1 rounded-md px-1 uppercase tracking-wider hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {column.label}
         {direction === 'ascending' ? (
-          <ChevronUp className="h-4 w-4" aria-hidden />
+          <ChevronUp className="h-3.5 w-3.5" aria-hidden />
         ) : direction === 'descending' ? (
-          <ChevronDown className="h-4 w-4" aria-hidden />
+          <ChevronDown className="h-3.5 w-3.5" aria-hidden />
         ) : (
           <ArrowUpDown className="h-3 w-3" aria-hidden />
         )}

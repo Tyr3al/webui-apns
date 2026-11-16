@@ -24,15 +24,15 @@ function ToastViewport({ className, ...props }: React.ComponentProps<'ol'>) {
 }
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full',
+  'group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-2xl p-4 pr-7 shadow-pop ring-1 transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full',
   {
     variants: {
       variant: {
-        default: 'border bg-background text-foreground',
-        destructive: 'destructive group border-destructive bg-destructive text-destructive-foreground',
-        success: 'border-green-500 bg-background text-foreground',
-        warning: 'border-yellow-500 bg-background text-foreground',
-        info: 'border-blue-500 bg-background text-foreground',
+        default: 'bg-popover text-popover-foreground ring-border',
+        destructive: 'destructive group bg-destructive-soft text-foreground ring-destructive/40',
+        success: 'bg-success-soft text-foreground ring-success/40',
+        warning: 'bg-warning-soft text-foreground ring-warning/40',
+        info: 'bg-info-soft text-foreground ring-info/40',
       },
     },
     defaultVariants: {
@@ -71,7 +71,7 @@ function ToastClose({ className, ...props }: React.ComponentProps<'button'>) {
       data-slot="toast-close"
       aria-label="Close"
       className={cn(
-        'absolute right-1 top-1 rounded-md p-1 text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus:ring-1 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600',
+        'absolute right-1.5 top-1.5 rounded-full p-1 text-foreground/60 transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-1 focus:ring-ring',
         className,
       )}
       type="button"

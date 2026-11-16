@@ -128,13 +128,14 @@ function TagInput({ label, items, onChange, readOnly, minItems, maxItems, placeh
           />
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="secondary"
+            size="icon"
+            className="shrink-0"
             onClick={addTag}
             disabled={!inputValue.trim() || full}
             aria-label={t('field.addValue', 'Add {{name}}', { name: label })}
           >
-            <Plus className="h-4 w-4" aria-hidden="true" />
+            <Plus aria-hidden="true" />
           </Button>
         </div>
       )}

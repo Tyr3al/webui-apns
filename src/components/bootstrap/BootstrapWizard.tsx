@@ -8,7 +8,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Loader2, Rocket } from 'lucide-react';
 
 import { useSchemaStore } from '@/stores/schemaStore';
@@ -208,8 +208,8 @@ export function BootstrapWizard() {
   if (!schema || !resolved) {
     return (
       <WizardShell>
-        <div className="flex items-center justify-center p-12 text-muted-foreground">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        <div className="flex items-center justify-center p-12 text-muted-foreground" role="status">
+          <Loader2 className="mr-2 h-6 w-6 animate-spin text-brand-text" aria-hidden="true" />
           {t('form.loadingSchema', 'Loading schema...')}
         </div>
       </WizardShell>
@@ -219,8 +219,8 @@ export function BootstrapWizard() {
   if (loading) {
     return (
       <WizardShell>
-        <div className="flex items-center justify-center p-12 text-muted-foreground">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        <div className="flex items-center justify-center p-12 text-muted-foreground" role="status">
+          <Loader2 className="mr-2 h-6 w-6 animate-spin text-brand-text" aria-hidden="true" />
           {t('bootstrap.loadingSetup', 'Loading setup...')}
         </div>
       </WizardShell>
@@ -230,7 +230,7 @@ export function BootstrapWizard() {
   if (loadError) {
     return (
       <WizardShell>
-        <div className="space-y-4 rounded-md border border-destructive/20 bg-destructive/10 p-4">
+        <div className="mt-3 space-y-4 rounded-xl bg-destructive-soft p-4">
           <p className="text-sm text-destructive" role="alert">
             {loadError}
           </p>
@@ -262,7 +262,7 @@ export function BootstrapWizard() {
   if (sections.length === 0) {
     return (
       <WizardShell>
-        <div className="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="mt-3 rounded-xl bg-destructive-soft p-4 text-sm text-destructive">
           {t('bootstrap.emptyForm', 'Setup form is empty. The server did not return any bootstrap fields.')}
         </div>
       </WizardShell>
@@ -273,52 +273,47 @@ export function BootstrapWizard() {
 
   return (
     <WizardShell>
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight">{t('bootstrap.welcome', 'Welcome to Stalwart')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('bootstrap.welcomeSubtitle', "Let's get your server set up.")}
-          </p>
+      <div className="space-y-3.5">
+        <div className="flex flex-wrap items-end justify-between gap-4 px-1 pb-2 pt-3">
+          <div>
+            <h1 className="page-title">{t('bootstrap.welcome', 'Welcome to Stalwart')}</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              {t('bootstrap.welcomeSubtitle', "Let's get your server set up.")}
+            </p>
+          </div>
+          <ProgressIndicator total={sections.length} current={currentPage} />
         </div>
 
-        <ProgressIndicator total={sections.length} current={currentPage} />
-
         {generalError && (
-          <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4">
-            <p className="text-sm text-destructive whitespace-pre-line">{generalError}</p>
+          <div className="rounded-xl bg-destructive-soft p-4" role="alert">
+            <p className="whitespace-pre-line text-sm text-destructive">{generalError}</p>
           </div>
         )}
 
-        <Card>
-          {current.title && (
-            <CardHeader>
-              <CardTitle className="text-base">{current.title}</CardTitle>
-            </CardHeader>
-          )}
-          <CardContent className={current.title ? '' : 'pt-6'}>
-            <fieldset disabled={saving} className="min-w-0 space-y-6">
-              <FormProvider schema={schema} mode="create" hideEnterprise>
-                {current.fields.map(({ formField, field }) => (
-                  <FieldRow
-                    key={formField.name}
-                    field={field}
-                    formField={formField}
-                    value={formData[formField.name]}
-                    onChange={(v) => handleFieldChange(formField.name, v)}
-                    error={fieldErrors[formField.name]}
-                  />
-                ))}
-              </FormProvider>
-            </fieldset>
-          </CardContent>
-        </Card>
+        <section className="tile @container px-5 pb-1.5 sm:px-6">
+          {current.title && <h2 className="section-title pb-1 pt-5">{current.title}</h2>}
+          <fieldset disabled={saving} className={cn('min-w-0 divide-y divide-border', !current.title && 'pt-1')}>
+            <FormProvider schema={schema} mode="create" hideEnterprise>
+              {current.fields.map(({ formField, field }) => (
+                <FieldRow
+                  key={formField.name}
+                  field={field}
+                  formField={formField}
+                  value={formData[formField.name]}
+                  onChange={(v) => handleFieldChange(formField.name, v)}
+                  error={fieldErrors[formField.name]}
+                />
+              ))}
+            </FormProvider>
+          </fieldset>
+        </section>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between gap-3 pt-2">
           <Button type="button" variant="outline" onClick={handleBack} disabled={!canGoBack || saving}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft aria-hidden="true" />
             {t('common.back', 'Back')}
           </Button>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs font-medium text-dim">
             {t('bootstrap.stepOf', 'Step {{current}} of {{total}}', {
               current: currentPage + 1,
               total: sections.length,
@@ -326,13 +321,13 @@ export function BootstrapWizard() {
           </div>
           {isLastPage ? (
             <Button type="button" onClick={handleSubmit} disabled={saving}>
-              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Rocket className="h-4 w-4 mr-2" />}
+              {saving ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Rocket aria-hidden="true" />}
               {t('bootstrap.finishSetup', 'Finish setup')}
             </Button>
           ) : (
             <Button type="button" onClick={handleNext} disabled={saving}>
               {t('common.next', 'Next')}
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight aria-hidden="true" />
             </Button>
           )}
         </div>
